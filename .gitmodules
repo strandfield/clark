@@ -1,0 +1,12 @@
+[submodule "dependencies/dynlib"]
+	path = dependencies/dynlib
+	url = https://github.com/strandfield/dynlib.git
+[submodule "dependencies/libclang-utils"]
+	path = dependencies/libclang-utils
+	url = https://github.com/strandfield/libclang-utils.git
+[submodule "dependencies/vcxproj"]
+	path = dependencies/vcxproj
+	url = https://github.com/strandfield/vcxproj.git
+[submodule "dependencies/cpptok"]
+	path = dependencies/cpptok
+	url = https://github.com/strandfield/cpptok.git

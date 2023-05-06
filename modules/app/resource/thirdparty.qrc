@@ -1,0 +1,10 @@
+<RCC>
+  <qresource prefix="">
+    <file>thirdparty/libclang/info.ini</file>
+    <file>thirdparty/libclang/LICENSE</file>
+    <file>thirdparty/qt5/info.ini</file>
+    <file>thirdparty/qt5/LICENSE</file>
+    <file>thirdparty/vscode-icons/info.ini</file>
+    <file>thirdparty/vscode-icons/LICENSE</file>
+  </qresource>
+</RCC>

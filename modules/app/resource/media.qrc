@@ -1,0 +1,22 @@
+<RCC>
+  <qresource prefix="">
+    <file>media/symbol-class.svg</file>
+    <file>media/symbol-constant.svg</file>
+    <file>media/symbol-enum-member.svg</file>
+    <file>media/symbol-enum.svg</file>
+    <file>media/symbol-field.svg</file>
+    <file>media/symbol-file.svg</file>
+    <file>media/symbol-interface.svg</file>
+    <file>media/symbol-key.svg</file>
+    <file>media/symbol-keyword.svg</file>
+    <file>media/symbol-method.svg</file>
+    <file>media/symbol-misc.svg</file>
+    <file>media/symbol-namespace.svg</file>
+    <file>media/symbol-numeric.svg</file>
+    <file>media/symbol-operator.svg</file>
+    <file>media/symbol-parameter.svg</file>
+    <file>media/symbol-property.svg</file>
+    <file>media/symbol-structure.svg</file>
+    <file>media/symbol-variable.svg</file>
+  </qresource>
+</RCC>

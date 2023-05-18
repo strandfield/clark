@@ -34,3 +34,9 @@ before_build:
 
 build_script:
   - cmake --build . --config Release -- %MSBUILD_ARGS%
+
+after_build:
+  - make-release
+
+artifacts:
+  - path: release

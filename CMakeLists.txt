@@ -64,3 +64,12 @@ add_subdirectory(modules)
 ##################################################################
 
 add_subdirectory(src)
+
+##################################################################
+###### install
+##################################################################
+
+if (WIN32)
+  configure_file("scripts/make-release.bat.in" "${CMAKE_BINARY_DIR}/make-release.bat")
+endif()
+

@@ -1,0 +1,43 @@
+
+set QT_DIR=${Qt5_DIR}\..\..\..
+set TINYXML2_DIR=${TINYXML2_INCLUDE}\..
+
+cd ..
+
+if exist "release" rd /s /q "release""
+mkdir release
+
+copy "build\Release\*.dll" "release"
+copy "build\Release\clark.exe" "release"
+
+echo Deploying dependencies
+
+
+copy "%TINYXML2_DIR%\bin\tinyxml2.dll" "release"
+
+copy "%QT_DIR%\bin\Qt5Core.dll" "release"
+copy "%QT_DIR%\bin\Qt5Gui.dll" "release"
+copy "%QT_DIR%\bin\Qt5Concurrent.dll" "release"
+copy "%QT_DIR%\bin\Qt5Network.dll" "release"
+copy "%QT_DIR%\bin\Qt5Svg.dll" "release"
+copy "%QT_DIR%\bin\Qt5Widgets.dll" "release"
+copy "%QT_DIR%\bin\Qt5Xml.dll" "release"
+
+echo Deploying plugins
+
+mkdir "release\plugins"
+mkdir "release\plugins\bearer"
+mkdir "release\plugins\iconengines"
+mkdir "release\plugins\platforms"
+mkdir "release\plugins\styles"
+
+copy "%QT_DIR%\plugins\bearer\qgenericbearer.dll" "release\plugins\bearer"
+copy "%QT_DIR%\plugins\iconengines\qsvgicon.dll" "release\plugins\iconengines"
+copy "%QT_DIR%\plugins\platforms\qwindows.dll" "release\plugins\platforms"
+copy "%QT_DIR%\plugins\styles\qwindowsvistastyle.dll" "release\plugins\styles"
+
+:: robocopy "%QT_DIR%\plugins\platforms" "release\plugins\platforms" /E
+:: robocopy "%QT_DIR%\plugins\imageformats" "release\plugins\imageformats" /E
+:: robocopy "%QT_DIR%\plugins\styles" "release\plugins\styles" /E
+
+cd build

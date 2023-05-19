@@ -7,9 +7,9 @@
 
 // Try to follow Semantic Versioning 2.0.0, see https://semver.org/.
 #define CLARK_VERSION_MAJOR 0
-#define CLARK_VERSION_MINOR 1
+#define CLARK_VERSION_MINOR 2
 #define CLARK_VERSION_PATCH 0
-#define CLARK_VERSION_SUFFIX ""
+#define CLARK_VERSION_SUFFIX "dev"
 
 #include <QVersionNumber>
 

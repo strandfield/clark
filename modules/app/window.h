@@ -56,8 +56,10 @@ protected:
 
   void closeTranslationUnit();
   bool openDocument(const QString& path);
+  bool openFileOnDisk(const QString& path);
   void gotoDocument(const QString& path);
   void gotoDocumentLine(const QString& path, int l);
+  void addCodeviewer(CodeViewer* viewer, bool connectSignals = true);
   CodeViewer* findCodeviewer(const QString& path) const;
   void onSymbolClicked();
 

@@ -9,6 +9,8 @@
 
 #include "view/astview.h"
 
+#include "widget/clangfileviewer.h"
+
 #include "application.h"
 #include "settings.h"
 
@@ -24,6 +26,8 @@
 #include <program/libclang.h>
 
 #include <utils/io.h>
+
+#include <libclang-utils/clang-translation-unit.h>
 
 #include <QAction>
 #include <QDockWidget>
@@ -268,6 +272,8 @@ void Window::onHandleReady()
     if (!qobject_cast<TranslationUnitSymbolInfoProvider*>(viewer->symbolInfoProvider()))
     {
       viewer->setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(translationUnitHandle(), *viewer->document()));
+      connect(viewer, &CodeViewer::symbolUnderCursorClicked, this, &Window::onSymbolClicked);
+      connect(viewer, &CodeViewer::includeDirectiveClicked, this, &Window::gotoDocument);
     }
   }
 }
@@ -300,20 +306,39 @@ void Window::closeTranslationUnit()
 
 bool Window::openDocument(const QString& path)
 {
+  if (translationUnitHandle().valid())
+  {
+    libclang::File f = translationUnitHandle().clangTranslationunit().getFile(path.toStdString());
+
+    if (!f.data)
+    {
+      qDebug() << "Translation unit is valid but could not find file: " << path;
+      return openFileOnDisk(path);
+    }
+
+    auto* viewer = new ClangFileViewer(translationUnitHandle(), f);
+
+    addCodeviewer(viewer);
+
+    return true;
+  }
+  else
+  {
+    return openFileOnDisk(path);
+  }
+}
+
+bool Window::openFileOnDisk(const QString& path)
+{
+  if (!clark::io::exists(path))
+    return false;
+
   QString document_content = QString::fromUtf8(clark::io::read_from_disk(path));
 
   auto* viewer = new CodeViewer(path, document_content);
 
-  if (translationUnitHandle().valid())
-  {
-    viewer->syntaxHighlighter()->setNameResolver(new TranslationUnitNameResolver(translationUnitHandle(), *viewer->document()));
-    viewer->setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(translationUnitHandle(), *viewer->document()));
-  }
-
-  m_documents_tab_widget->addTab(viewer, QFileInfo(path).fileName());
-
-  connect(viewer, &CodeViewer::symbolUnderCursorClicked, this, &Window::onSymbolClicked);
-  connect(viewer, &CodeViewer::includeDirectiveClicked, this, &Window::gotoDocument);
+  constexpr bool connect_signals = false;
+  addCodeviewer(viewer, connect_signals);
 
   return true;
 }
@@ -346,6 +371,19 @@ void Window::gotoDocumentLine(const QString& path, int l)
   }
 }
 
+void Window::addCodeviewer(CodeViewer* viewer, bool connectSignals)
+{
+  QString path = viewer->documentPath();
+  int tabindex = m_documents_tab_widget->addTab(viewer, QFileInfo(path).fileName());
+  m_documents_tab_widget->setTabToolTip(tabindex, path);
+
+  if (connectSignals)
+  {
+    connect(viewer, &CodeViewer::symbolUnderCursorClicked, this, &Window::onSymbolClicked);
+    connect(viewer, &CodeViewer::includeDirectiveClicked, this, &Window::gotoDocument);
+  }
+}
+
 CodeViewer* Window::findCodeviewer(const QString& path) const
 {
   if (path.contains('\\'))
@@ -358,7 +396,9 @@ CodeViewer* Window::findCodeviewer(const QString& path) const
     auto* cv = qobject_cast<CodeViewer*>(m_documents_tab_widget->widget(i));
 
     if (cv && cv->documentPath() == path)
+    {
       return cv;
+    }
   }
 
   return nullptr;

@@ -20,11 +20,16 @@ CodeViewer::CodeViewer(const QString& documentPath, const QString& documentConte
   setMouseTracking(true);
 
   setPlainText(documentContent);
-  document()->setMetaInformation(QTextDocument::MetaInformation::DocumentUrl, documentPath);
+  document()->setMetaInformation(QTextDocument::MetaInformation::DocumentUrl, QString(documentPath).replace('\\', '/'));
 
   m_syntax_highlighter = new SyntaxHighlighter(document());
 }
 
+/**
+ * \brief returns the path of the document
+ * 
+ * This is the "generic" path (i.e., with forward slashes).
+ */
 QString CodeViewer::documentPath() const
 {
   return document()->metaInformation(QTextDocument::MetaInformation::DocumentUrl);

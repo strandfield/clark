@@ -348,6 +348,11 @@ void Window::gotoDocumentLine(const QString& path, int l)
 
 CodeViewer* Window::findCodeviewer(const QString& path) const
 {
+  if (path.contains('\\'))
+  {
+    return findCodeviewer(QString(path).replace('\\', '/'));
+  }
+
   for (int i(0); i < m_documents_tab_widget->count(); ++i)
   {
     auto* cv = qobject_cast<CodeViewer*>(m_documents_tab_widget->widget(i));

@@ -17,7 +17,7 @@ class TranslationUnitNameResolver : public SyntaxHighlighterNameResolver
 public:
   TranslationUnitNameResolver(TranslationUnitHandle handle, const QTextDocument& document);
 
-  SyntaxHighlighter::Format resolve(const QTextDocument& document, int line, int col, const cpptok::Token& tok) override;
+  CppSyntaxHighlighter::Format resolve(const QTextDocument& document, int line, int col, const cpptok::Token& tok) override;
 
 private:
   TranslationUnitHandle m_handle;

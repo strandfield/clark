@@ -7,7 +7,7 @@
 
 #include <QPlainTextEdit>
 
-class SyntaxHighlighter;
+class CppSyntaxHighlighter;
 
 class IncludesInFile;
 class SymbolObject;
@@ -23,7 +23,7 @@ public:
 
   QString documentPath() const;
 
-  SyntaxHighlighter* syntaxHighlighter() const;
+  CppSyntaxHighlighter* syntaxHighlighter() const;
 
   static QFont courierFont();
 
@@ -69,7 +69,7 @@ private:
   };
 
 private:
-  SyntaxHighlighter* m_syntax_highlighter = nullptr;
+  CppSyntaxHighlighter* m_syntax_highlighter = nullptr;
   SymbolInfoProvider* m_info_provider = nullptr;
   TokenUnderCursor m_token_under_cursor;
   IncludesInFile* m_includes = nullptr;

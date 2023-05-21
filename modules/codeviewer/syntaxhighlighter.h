@@ -11,14 +11,13 @@
 
 #include <vector>
 
-class SyntaxHighlighterNameResolver;
 
-class SyntaxHighlighter : public QSyntaxHighlighter
+class CppSyntaxHighlighter : public QSyntaxHighlighter
 {
   Q_OBJECT
 public:
-  explicit SyntaxHighlighter(QTextDocument* document);
-  ~SyntaxHighlighter();
+  explicit CppSyntaxHighlighter(QTextDocument* document);
+  ~CppSyntaxHighlighter();
 
   enum Format
   {
@@ -41,6 +40,25 @@ public:
     ST_Comment = 1,
   };
 
+protected:
+  void initFormat(Format fmt, const QTextCharFormat& value);
+  void setFormat(int start, int count, Format fmt);
+
+protected:
+  const std::vector<QTextCharFormat>& formats() const;
+
+private:
+  std::vector<QTextCharFormat> m_formats;
+};
+
+class SyntaxHighlighterNameResolver;
+
+class CpptokSyntaxHighlighter : public CppSyntaxHighlighter
+{
+  Q_OBJECT
+public:
+  explicit CpptokSyntaxHighlighter(QTextDocument* document);
+
   SyntaxHighlighterNameResolver& nameResolver() const;
   void setNameResolver(SyntaxHighlighterNameResolver* nameresolver);
 
@@ -48,15 +66,9 @@ protected:
   void highlightBlock(const QString& text) override;
 
 protected:
-  void initFormat(Format fmt, const QTextCharFormat& value);
-  void setFormat(int start, int count, Format fmt);
-
-protected:
-  const std::vector<QTextCharFormat>& formats() const;
   QStringLineTokenizer& tokenizer();
 
 private:
-  std::vector<QTextCharFormat> m_formats;
   QStringLineTokenizer m_tokenizer;
   SyntaxHighlighterNameResolver* m_name_resolver = nullptr;
 };
@@ -68,7 +80,7 @@ public:
   explicit SyntaxHighlighterNameResolver(QObject* parent = nullptr);
   ~SyntaxHighlighterNameResolver();
 
-  virtual SyntaxHighlighter::Format resolve(const QTextDocument& document, int line, int col, const cpptok::Token& tok);
+  virtual CppSyntaxHighlighter::Format resolve(const QTextDocument& document, int line, int col, const cpptok::Token& tok);
 
 Q_SIGNALS:
   void update();

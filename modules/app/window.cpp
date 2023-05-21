@@ -264,9 +264,12 @@ void Window::onHandleReady()
     if (!viewer)
       continue;
 
-    if (!qobject_cast<TranslationUnitNameResolver*>(&viewer->syntaxHighlighter()->nameResolver()))
+    if (auto* highlighter = qobject_cast<CpptokSyntaxHighlighter*>(viewer->syntaxHighlighter()))
     {
-      viewer->syntaxHighlighter()->setNameResolver(new TranslationUnitNameResolver(translationUnitHandle(), *viewer->document()));
+      if (!qobject_cast<TranslationUnitNameResolver*>(&highlighter->nameResolver()))
+      {
+        highlighter->setNameResolver(new TranslationUnitNameResolver(translationUnitHandle(), *viewer->document()));
+      }
     }
 
     if (!qobject_cast<TranslationUnitSymbolInfoProvider*>(viewer->symbolInfoProvider()))

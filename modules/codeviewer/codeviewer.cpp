@@ -22,7 +22,7 @@ CodeViewer::CodeViewer(const QString& documentPath, const QString& documentConte
   setPlainText(documentContent);
   document()->setMetaInformation(QTextDocument::MetaInformation::DocumentUrl, QString(documentPath).replace('\\', '/'));
 
-  m_syntax_highlighter = new SyntaxHighlighter(document());
+  m_syntax_highlighter = new CpptokSyntaxHighlighter(document());
 }
 
 /**
@@ -35,7 +35,7 @@ QString CodeViewer::documentPath() const
   return document()->metaInformation(QTextDocument::MetaInformation::DocumentUrl);
 }
 
-SyntaxHighlighter* CodeViewer::syntaxHighlighter() const
+CppSyntaxHighlighter* CodeViewer::syntaxHighlighter() const
 {
   return m_syntax_highlighter;
 }

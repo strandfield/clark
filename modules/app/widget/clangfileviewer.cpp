@@ -22,7 +22,11 @@ ClangFileViewer::ClangFileViewer(const TranslationUnitHandle& thandle, const lib
   m_thandle(thandle),
   m_file(file)
 {
-  syntaxHighlighter()->setNameResolver(new TranslationUnitNameResolver(thandle, *document()));
+  if (auto* highlighter = qobject_cast<CpptokSyntaxHighlighter*>(syntaxHighlighter()))
+  {
+    highlighter->setNameResolver(new TranslationUnitNameResolver(thandle, *document()));
+  }
+
   setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(thandle, *document()));
 }
 

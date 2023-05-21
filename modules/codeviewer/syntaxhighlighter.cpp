@@ -8,7 +8,7 @@
 
 #include <set>
 
-SyntaxHighlighter::SyntaxHighlighter(QTextDocument* document) : QSyntaxHighlighter(document)
+CppSyntaxHighlighter::CppSyntaxHighlighter(QTextDocument* document) : QSyntaxHighlighter(document)
 {
   m_formats.resize(Comment + 1);
 
@@ -50,25 +50,88 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* document) : QSyntaxHighlight
 
   fmt.setForeground(QColor("#008000"));
   initFormat(Format::Comment, fmt);
-
-  setNameResolver(new SyntaxHighlighterNameResolver(this));
 }
 
-SyntaxHighlighter::~SyntaxHighlighter()
+CppSyntaxHighlighter::~CppSyntaxHighlighter()
 {
 
 }
 
-SyntaxHighlighterNameResolver& SyntaxHighlighter::nameResolver() const
+
+void CppSyntaxHighlighter::initFormat(Format fmt, const QTextCharFormat& value)
+{
+  m_formats[static_cast<size_t>(fmt)] = value;
+}
+
+void CppSyntaxHighlighter::setFormat(int start, int count, Format fmt)
+{
+  QSyntaxHighlighter::setFormat(start, count, m_formats.at(fmt));
+}
+
+const std::vector<QTextCharFormat>& CppSyntaxHighlighter::formats() const
+{
+  return m_formats;
+}
+
+
+SyntaxHighlighterNameResolver::SyntaxHighlighterNameResolver(QObject* parent) : QObject(parent)
+{
+
+}
+
+SyntaxHighlighterNameResolver::~SyntaxHighlighterNameResolver()
+{
+
+}
+
+CppSyntaxHighlighter::Format SyntaxHighlighterNameResolver::resolve(const QTextDocument& document, int line, int col, const cpptok::Token& tok)
+{
+  static const std::set<std::string> known_namespaces = {
+    "std", "Eigen", "Poco", "Qt"
+  };
+
+  static const std::set<std::string> known_types = {
+
+  };
+
+  {
+    auto it = known_namespaces.find(std::string(tok.text()));
+
+    if (it != known_namespaces.end())
+      return CppSyntaxHighlighter::Format::NamespaceName;
+  }
+
+  {
+    auto it = known_types.find(std::string(tok.text()));
+
+    if (it != known_types.end())
+      return CppSyntaxHighlighter::Format::Typename;
+  }
+
+  // Check if token is immediately followed by "::"
+  if (std::strncmp(tok.text().data() + tok.text().length(), "::", 2) == 0)
+  {
+    return CppSyntaxHighlighter::Format::Typename;
+  }
+
+  return CppSyntaxHighlighter::Format::Default;
+}
+
+CpptokSyntaxHighlighter::CpptokSyntaxHighlighter(QTextDocument* document) : CppSyntaxHighlighter(document)
+{
+  setNameResolver(new SyntaxHighlighterNameResolver(this));
+}
+
+SyntaxHighlighterNameResolver& CpptokSyntaxHighlighter::nameResolver() const
 {
   return *m_name_resolver;
 }
 
-void SyntaxHighlighter::setNameResolver(SyntaxHighlighterNameResolver* nameresolver)
+void CpptokSyntaxHighlighter::setNameResolver(SyntaxHighlighterNameResolver* nameresolver)
 {
   if (nameresolver)
   {
-    if(m_name_resolver)
+    if (m_name_resolver)
       m_name_resolver->deleteLater();
 
     m_name_resolver = nameresolver;
@@ -79,7 +142,7 @@ void SyntaxHighlighter::setNameResolver(SyntaxHighlighterNameResolver* nameresol
   }
 }
 
-void SyntaxHighlighter::highlightBlock(const QString& text)
+void CpptokSyntaxHighlighter::highlightBlock(const QString& text)
 {
   int prevstate = previousBlockState();
 
@@ -128,65 +191,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
   }
 }
 
-void SyntaxHighlighter::initFormat(Format fmt, const QTextCharFormat& value)
-{
-  m_formats[static_cast<size_t>(fmt)] = value;
-}
-
-void SyntaxHighlighter::setFormat(int start, int count, Format fmt)
-{
-  QSyntaxHighlighter::setFormat(start, count, m_formats.at(fmt));
-}
-
-const std::vector<QTextCharFormat>& SyntaxHighlighter::formats() const
-{
-  return m_formats;
-}
-
-QStringLineTokenizer& SyntaxHighlighter::tokenizer()
+QStringLineTokenizer& CpptokSyntaxHighlighter::tokenizer()
 {
   return m_tokenizer;
-}
-
-SyntaxHighlighterNameResolver::SyntaxHighlighterNameResolver(QObject* parent) : QObject(parent)
-{
-
-}
-
-SyntaxHighlighterNameResolver::~SyntaxHighlighterNameResolver()
-{
-
-}
-
-SyntaxHighlighter::Format SyntaxHighlighterNameResolver::resolve(const QTextDocument& document, int line, int col, const cpptok::Token& tok)
-{
-  static const std::set<std::string> known_namespaces = {
-    "std", "Eigen", "Poco", "Qt"
-  };
-
-  static const std::set<std::string> known_types = {
-
-  };
-
-  {
-    auto it = known_namespaces.find(std::string(tok.text()));
-
-    if (it != known_namespaces.end())
-      return SyntaxHighlighter::Format::NamespaceName;
-  }
-
-  {
-    auto it = known_types.find(std::string(tok.text()));
-
-    if (it != known_types.end())
-      return SyntaxHighlighter::Format::Typename;
-  }
-
-  // Check if token is immediately followed by "::"
-  if (std::strncmp(tok.text().data() + tok.text().length(), "::", 2) == 0)
-  {
-    return SyntaxHighlighter::Format::Typename;
-  }
-
-  return SyntaxHighlighter::Format::Default;
 }

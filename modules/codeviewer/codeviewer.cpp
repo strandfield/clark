@@ -40,6 +40,19 @@ CppSyntaxHighlighter* CodeViewer::syntaxHighlighter() const
   return m_syntax_highlighter;
 }
 
+void CodeViewer::setSyntaxHighlighter(CppSyntaxHighlighter* highlighter)
+{
+  if (m_syntax_highlighter)
+  {
+    delete m_syntax_highlighter;
+  }
+
+  m_syntax_highlighter = highlighter;
+
+  if (m_syntax_highlighter)
+    m_syntax_highlighter->rehighlight();
+}
+
 QFont CodeViewer::courierFont()
 {
   static QFont cache = []() -> QFont {

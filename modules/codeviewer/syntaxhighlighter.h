@@ -37,6 +37,7 @@ public:
 
   enum State
   {
+    ST_Default = -1,
     ST_Comment = 1,
   };
 

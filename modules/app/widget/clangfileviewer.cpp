@@ -4,6 +4,7 @@
 
 #include "clangfileviewer.h"
 
+#include "sema/clangsyntaxhighlighter.h"
 #include "sema/tunameresolver.h"
 #include "sema/tusymbolinfoprovider.h"
 
@@ -22,10 +23,7 @@ ClangFileViewer::ClangFileViewer(const TranslationUnitHandle& thandle, const lib
   m_thandle(thandle),
   m_file(file)
 {
-  if (auto* highlighter = qobject_cast<CpptokSyntaxHighlighter*>(syntaxHighlighter()))
-  {
-    highlighter->setNameResolver(new TranslationUnitNameResolver(thandle, *document()));
-  }
+  setSyntaxHighlighter(new ClangSyntaxHighlighter(thandle, file, document()));
 
   setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(thandle, *document()));
 }

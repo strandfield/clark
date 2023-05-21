@@ -24,6 +24,7 @@ public:
   QString documentPath() const;
 
   CppSyntaxHighlighter* syntaxHighlighter() const;
+  void setSyntaxHighlighter(CppSyntaxHighlighter* highlighter);
 
   static QFont courierFont();
 

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## develop
 
+### Added 
+
+- Double-click to open translation unit in Visual Studio open dialog
+
 ### Changed
 
 - Use libclang for syntax highlighting

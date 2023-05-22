@@ -11,7 +11,12 @@
 
 #include <vector>
 
-
+/**
+ * \brief base class for C++ syntax highlighter
+ * 
+ * This class provides a list of formats that subclasses can use to
+ * highlight C++ source code in a QTextDocument.
+ */
 class CppSyntaxHighlighter : public QSyntaxHighlighter
 {
   Q_OBJECT
@@ -52,16 +57,21 @@ private:
   std::vector<QTextCharFormat> m_formats;
 };
 
-class SyntaxHighlighterNameResolver;
+class SyntaxHighlighterNameHighlighter;
 
+/**
+ * \brief a C++ syntax highlighter that uses cpptok for tokenization
+ * 
+ * Highlighting of identifiers is delegated to SyntaxHighlighterNameHighlighter.
+ */
 class CpptokSyntaxHighlighter : public CppSyntaxHighlighter
 {
   Q_OBJECT
 public:
   explicit CpptokSyntaxHighlighter(QTextDocument* document);
 
-  SyntaxHighlighterNameResolver& nameResolver() const;
-  void setNameResolver(SyntaxHighlighterNameResolver* nameresolver);
+  SyntaxHighlighterNameHighlighter& nameHighlighter() const;
+  void setNameHighlighter(SyntaxHighlighterNameHighlighter* namehighlighter);
 
 protected:
   void highlightBlock(const QString& text) override;
@@ -71,21 +81,23 @@ protected:
 
 private:
   QStringLineTokenizer m_tokenizer;
-  SyntaxHighlighterNameResolver* m_name_resolver = nullptr;
+  SyntaxHighlighterNameHighlighter* m_name_highlighter = nullptr;
 };
 
-class SyntaxHighlighterNameResolver : public QObject
+/**
+ * \brief provides highlighting of identifiers
+ */
+class SyntaxHighlighterNameHighlighter : public QObject
 {
   Q_OBJECT
 public:
-  explicit SyntaxHighlighterNameResolver(QObject* parent = nullptr);
-  ~SyntaxHighlighterNameResolver();
+  explicit SyntaxHighlighterNameHighlighter(QObject* parent = nullptr);
+  ~SyntaxHighlighterNameHighlighter();
 
-  virtual CppSyntaxHighlighter::Format resolve(const QTextDocument& document, int line, int col, const cpptok::Token& tok);
+  virtual CppSyntaxHighlighter::Format format(const QTextDocument& document, int line, int col, std::string_view text);
 
 Q_SIGNALS:
   void update();
-  void updateBlock(const QTextBlock& b);
 };
 
 #endif // CLARK_SYNTAXHIGHLIGHTER_H

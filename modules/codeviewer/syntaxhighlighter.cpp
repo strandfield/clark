@@ -74,17 +74,17 @@ const std::vector<QTextCharFormat>& CppSyntaxHighlighter::formats() const
 }
 
 
-SyntaxHighlighterNameResolver::SyntaxHighlighterNameResolver(QObject* parent) : QObject(parent)
+SyntaxHighlighterNameHighlighter::SyntaxHighlighterNameHighlighter(QObject* parent) : QObject(parent)
 {
 
 }
 
-SyntaxHighlighterNameResolver::~SyntaxHighlighterNameResolver()
+SyntaxHighlighterNameHighlighter::~SyntaxHighlighterNameHighlighter()
 {
 
 }
 
-CppSyntaxHighlighter::Format SyntaxHighlighterNameResolver::resolve(const QTextDocument& document, int line, int col, const cpptok::Token& tok)
+CppSyntaxHighlighter::Format SyntaxHighlighterNameHighlighter::format(const QTextDocument& document, int line, int col, std::string_view text)
 {
   static const std::set<std::string> known_namespaces = {
     "std", "Eigen", "Poco", "Qt"
@@ -95,21 +95,21 @@ CppSyntaxHighlighter::Format SyntaxHighlighterNameResolver::resolve(const QTextD
   };
 
   {
-    auto it = known_namespaces.find(std::string(tok.text()));
+    auto it = known_namespaces.find(std::string(text));
 
     if (it != known_namespaces.end())
       return CppSyntaxHighlighter::Format::NamespaceName;
   }
 
   {
-    auto it = known_types.find(std::string(tok.text()));
+    auto it = known_types.find(std::string(text));
 
     if (it != known_types.end())
       return CppSyntaxHighlighter::Format::Typename;
   }
 
   // Check if token is immediately followed by "::"
-  if (std::strncmp(tok.text().data() + tok.text().length(), "::", 2) == 0)
+  if (std::strncmp(text.data() + text.length(), "::", 2) == 0)
   {
     return CppSyntaxHighlighter::Format::Typename;
   }
@@ -119,25 +119,24 @@ CppSyntaxHighlighter::Format SyntaxHighlighterNameResolver::resolve(const QTextD
 
 CpptokSyntaxHighlighter::CpptokSyntaxHighlighter(QTextDocument* document) : CppSyntaxHighlighter(document)
 {
-  setNameResolver(new SyntaxHighlighterNameResolver(this));
+  setNameHighlighter(new SyntaxHighlighterNameHighlighter(this));
 }
 
-SyntaxHighlighterNameResolver& CpptokSyntaxHighlighter::nameResolver() const
+SyntaxHighlighterNameHighlighter& CpptokSyntaxHighlighter::nameHighlighter() const
 {
-  return *m_name_resolver;
+  return *m_name_highlighter;
 }
 
-void CpptokSyntaxHighlighter::setNameResolver(SyntaxHighlighterNameResolver* nameresolver)
+void CpptokSyntaxHighlighter::setNameHighlighter(SyntaxHighlighterNameHighlighter* namehighlighter)
 {
-  if (nameresolver)
+  if (namehighlighter)
   {
-    if (m_name_resolver)
-      m_name_resolver->deleteLater();
+    if (m_name_highlighter)
+      m_name_highlighter->deleteLater();
 
-    m_name_resolver = nameresolver;
-    m_name_resolver->setParent(this);
-    connect(nameresolver, &SyntaxHighlighterNameResolver::update, this, &QSyntaxHighlighter::rehighlight);
-    connect(nameresolver, &SyntaxHighlighterNameResolver::updateBlock, this, &QSyntaxHighlighter::rehighlightBlock);
+    m_name_highlighter = namehighlighter;
+    m_name_highlighter->setParent(this);
+    connect(namehighlighter, &SyntaxHighlighterNameHighlighter::update, this, &QSyntaxHighlighter::rehighlight);
     rehighlight();
   }
 }
@@ -173,7 +172,7 @@ void CpptokSyntaxHighlighter::highlightBlock(const QString& text)
     else if (tok.isIdentifier())
     {
       int col = m_tokenizer.col(tok);
-      Format f = nameResolver().resolve(*document(), line, col, tok);
+      Format f = nameHighlighter().format(*document(), line, col, tok.text());
       setFormat(m_tokenizer.offset(tok), m_tokenizer.length(tok), f);
     }
     else if (tok.type() == cpptok::TokenType::SingleLineComment || tok.type() == cpptok::TokenType::MultiLineComment)

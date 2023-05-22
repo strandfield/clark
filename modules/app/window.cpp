@@ -10,6 +10,7 @@
 #include "view/astview.h"
 
 #include "widget/clangfileviewer.h"
+#include "widget/filewidget.h"
 
 #include "application.h"
 #include "settings.h"
@@ -70,6 +71,7 @@ void Window::setupUi()
   {
     QMenu* menu = menuBar()->addMenu("&View");
 
+    m_view_files_action = menu->addAction("&File", this, &Window::createFileWidget);
     m_astview_action = menu->addAction("AST", this, &Window::createAstView);
   }
 
@@ -204,6 +206,7 @@ void Window::refreshUi()
   bool has_tunit = translationUnit() != nullptr;
 
   m_close_action->setEnabled(has_tunit);
+  m_view_files_action->setEnabled(translationUnitIndexing() != nullptr);
   m_astview_action->setEnabled(has_tunit);
 }
 
@@ -233,6 +236,8 @@ void Window::onTranslationUnitIndexingReady()
   const clark::IndexingResult& idx = translationUnitIndexing()->indexingResult();
   int duration = std::chrono::duration_cast<std::chrono::milliseconds>(idx.indexing_time).count();
   statusBar()->showMessage(QString("Indexing completed! (%1ms)").arg(QString::number(duration)), 500);
+
+  refreshUi();
 }
 
 QDockWidget* Window::dock(QWidget* w, Qt::DockWidgetArea area)
@@ -437,6 +442,19 @@ void Window::onSymbolClicked()
       gotoDocumentLine(QString::fromStdString(def->file->path), def->line);
     }
   }
+}
+
+void Window::createFileWidget()
+{
+  auto* v = new FileWidget(translationUnitIndexing());
+  v->setWindowTitle("Files");
+  connect(v, &FileWidget::fileDoubleClicked, this, &Window::gotoDocument);
+  QDockWidget* widget = dock(v, Qt::DockWidgetArea::RightDockWidgetArea);
+
+  connect(translationUnitIndexing(), &QObject::destroyed, this, [this, widget]() {
+    removeDockWidget(widget);
+    delete widget;
+    });
 }
 
 void Window::createAstView()

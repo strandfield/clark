@@ -63,6 +63,7 @@ protected:
   CodeViewer* findCodeviewer(const QString& path) const;
   void onSymbolClicked();
 
+  void createFileWidget();
   void createAstView();
   void onCursorDblClicked(const libclang::Cursor& c);
 
@@ -75,6 +76,7 @@ private:
   /* File menu */
   QAction* m_close_action = nullptr;
   /* View menu */
+  QAction* m_view_files_action = nullptr;
   QAction* m_astview_action = nullptr;
   /* Central widget */
   QTabWidget* m_documents_tab_widget = nullptr;

@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added 
 
 - Double-click to open translation unit in Visual Studio open dialog
+- Create AST view from View menu
 
 ### Changed
 

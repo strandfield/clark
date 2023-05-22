@@ -72,7 +72,11 @@ private:
   TranslationUnitIndexing* m_translation_unit_indexing = nullptr;
 
 private:
+  /* File menu */
   QAction* m_close_action = nullptr;
+  /* View menu */
+  QAction* m_astview_action = nullptr;
+  /* Central widget */
   QTabWidget* m_documents_tab_widget = nullptr;
 };
 

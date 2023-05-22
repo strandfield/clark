@@ -68,6 +68,12 @@ void Window::setupUi()
   }
 
   {
+    QMenu* menu = menuBar()->addMenu("&View");
+
+    m_astview_action = menu->addAction("AST", this, &Window::createAstView);
+  }
+
+  {
     QMenu* menu = menuBar()->addMenu("&Help");
     menu->addAction("About Qt", qApp, &QApplication::aboutQt);
     menu->addAction("About", this, &Window::about);
@@ -195,7 +201,10 @@ void Window::closeEvent(QCloseEvent* ev)
 
 void Window::refreshUi()
 {
-  m_close_action->setEnabled(translationUnit() != nullptr);
+  bool has_tunit = translationUnit() != nullptr;
+
+  m_close_action->setEnabled(has_tunit);
+  m_astview_action->setEnabled(has_tunit);
 }
 
 void Window::onTranslationUnitLoaded()
@@ -215,8 +224,6 @@ void Window::onTranslationUnitLoaded()
   connect(m_translation_unit_indexing, &TranslationUnitIndexing::ready, this, &Window::onTranslationUnitIndexingReady);
 
   m_translation_unit_indexing->start();
-
-  createAstView();
 
   refreshUi();
 }

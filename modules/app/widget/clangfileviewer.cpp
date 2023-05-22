@@ -4,7 +4,7 @@
 
 #include "clangfileviewer.h"
 
-#include "sema/tunameresolver.h"
+#include "sema/clangsyntaxhighlighter.h"
 #include "sema/tusymbolinfoprovider.h"
 
 #include <libclang-utils/clang-translation-unit.h>
@@ -22,11 +22,19 @@ ClangFileViewer::ClangFileViewer(const TranslationUnitHandle& thandle, const lib
   m_thandle(thandle),
   m_file(file)
 {
-  syntaxHighlighter()->setNameResolver(new TranslationUnitNameResolver(thandle, *document()));
-  setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(thandle, *document()));
+  setup(this, thandle, file);
 }
 
 const libclang::File& ClangFileViewer::file() const
 {
   return m_file;
+}
+
+/**
+ * \brief install a syntax highlighter and symbol info provider on the codeviewer
+ */
+void ClangFileViewer::setup(CodeViewer* viewer, const TranslationUnitHandle& thandle, const libclang::File& file)
+{
+  viewer->setSyntaxHighlighter(new ClangSyntaxHighlighter(thandle, file, viewer->document()));
+  viewer->setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(thandle, *viewer->document()));
 }

@@ -22,6 +22,8 @@ public:
   
   const libclang::File& file() const;
 
+  static void setup(CodeViewer* viewer, const TranslationUnitHandle& thandle, const libclang::File& file);
+
 private:
   TranslationUnitHandle m_thandle;
   libclang::File m_file;

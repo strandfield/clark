@@ -14,7 +14,6 @@
 #include "application.h"
 #include "settings.h"
 
-#include <sema/tunameresolver.h>
 #include <sema/tusymbolinfoprovider.h>
 
 #include <indexing/indexer.h>
@@ -261,20 +260,20 @@ void Window::onHandleReady()
   {
     auto* viewer = qobject_cast<CodeViewer*>(m_documents_tab_widget->widget(i));
 
-    if (!viewer)
+    if (!viewer || qobject_cast<ClangFileViewer*>(viewer))
       continue;
 
-    if (!qobject_cast<TranslationUnitNameResolver*>(&viewer->syntaxHighlighter()->nameResolver()))
+    libclang::File f = translationUnitHandle().clangTranslationunit().getFile(viewer->documentPath().toStdString());
+
+    if (!f.data)
     {
-      viewer->syntaxHighlighter()->setNameResolver(new TranslationUnitNameResolver(translationUnitHandle(), *viewer->document()));
+      qDebug() << "Translation unit is valid but could not find file: " << viewer->documentPath();
+      continue;
     }
 
-    if (!qobject_cast<TranslationUnitSymbolInfoProvider*>(viewer->symbolInfoProvider()))
-    {
-      viewer->setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(translationUnitHandle(), *viewer->document()));
-      connect(viewer, &CodeViewer::symbolUnderCursorClicked, this, &Window::onSymbolClicked);
-      connect(viewer, &CodeViewer::includeDirectiveClicked, this, &Window::gotoDocument);
-    }
+    ClangFileViewer::setup(viewer, translationUnitHandle(), f);
+    connect(viewer, &CodeViewer::symbolUnderCursorClicked, this, &Window::onSymbolClicked);
+    connect(viewer, &CodeViewer::includeDirectiveClicked, this, &Window::gotoDocument);
   }
 }
 

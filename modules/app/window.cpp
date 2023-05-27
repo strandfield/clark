@@ -8,6 +8,7 @@
 #include "dialogs/openslndialog.h"
 
 #include "view/astview.h"
+#include "view/entityview.h"
 
 #include "widget/clangfileviewer.h"
 #include "widget/filewidget.h"
@@ -73,6 +74,7 @@ void Window::setupUi()
 
     m_view_files_action = menu->addAction("&File", this, &Window::createFileWidget);
     m_astview_action = menu->addAction("AST", this, &Window::createAstView);
+    m_view_symbols_action = menu->addAction("Symbols", this, &Window::createEntityView);
   }
 
   {
@@ -204,10 +206,12 @@ void Window::closeEvent(QCloseEvent* ev)
 void Window::refreshUi()
 {
   bool has_tunit = translationUnit() != nullptr;
+  bool has_idx = translationUnitIndexing() != nullptr;
 
   m_close_action->setEnabled(has_tunit);
-  m_view_files_action->setEnabled(translationUnitIndexing() != nullptr);
+  m_view_files_action->setEnabled(has_idx);
   m_astview_action->setEnabled(has_tunit);
+  m_view_symbols_action->setEnabled(has_idx);
 }
 
 void Window::onTranslationUnitLoaded()
@@ -475,4 +479,17 @@ void Window::onCursorDblClicked(const libclang::Cursor& c)
   libclang::SpellingLocation loc = c.getLocation().getSpellingLocation();
   std::string path = std::filesystem::path(loc.file.getFileName()).generic_u8string();
   gotoDocumentLine(QString::fromStdString(path), loc.line);
+}
+
+void Window::createEntityView()
+{
+  auto* v = new EntityView(translationUnitIndexing());
+  v->setWindowTitle("Symbols");
+  //connect(v, &EntityView::entityDoubleClicked, this, &Window::onEntityDblClicked);
+  QDockWidget* widget = dock(v, Qt::DockWidgetArea::RightDockWidgetArea);
+
+  connect(translationUnit(), &TranslationUnit::aboutToBeDestroyed, this, [this, widget]() {
+    removeDockWidget(widget);
+    delete widget;
+    });
 }

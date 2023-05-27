@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Double-click to open translation unit in Visual Studio open dialog
 - Create AST view from View menu
 - Add "Files" view
+- Add "Symbols" view
 
 ### Changed
 

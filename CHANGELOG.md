@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Create AST view from View menu
 - Add "Files" view
 - Add "Symbols" view
+- Add "Derived classes" view
 
 ### Changed
 

@@ -11,6 +11,7 @@
 #include "view/entityview.h"
 
 #include "widget/clangfileviewer.h"
+#include "widget/derivedclasseswidget.h"
 #include "widget/filewidget.h"
 
 #include "application.h"
@@ -75,6 +76,7 @@ void Window::setupUi()
     m_view_files_action = menu->addAction("&File", this, &Window::createFileWidget);
     m_astview_action = menu->addAction("AST", this, &Window::createAstView);
     m_view_symbols_action = menu->addAction("Symbols", this, &Window::createEntityView);
+    m_view_derivedclasses_action = menu->addAction("Derived classes", this, &Window::createDerivedClassesWidget);
   }
 
   {
@@ -212,6 +214,7 @@ void Window::refreshUi()
   m_view_files_action->setEnabled(has_idx);
   m_astview_action->setEnabled(has_tunit);
   m_view_symbols_action->setEnabled(has_idx);
+  m_view_derivedclasses_action->setEnabled(has_idx);
 }
 
 void Window::onTranslationUnitLoaded()
@@ -486,6 +489,18 @@ void Window::createEntityView()
   auto* v = new EntityView(translationUnitIndexing());
   v->setWindowTitle("Symbols");
   //connect(v, &EntityView::entityDoubleClicked, this, &Window::onEntityDblClicked);
+  QDockWidget* widget = dock(v, Qt::DockWidgetArea::RightDockWidgetArea);
+
+  connect(translationUnit(), &TranslationUnit::aboutToBeDestroyed, this, [this, widget]() {
+    removeDockWidget(widget);
+    delete widget;
+    });
+}
+
+void Window::createDerivedClassesWidget()
+{
+  auto* v = new DerivedClassesWidget(translationUnitIndexing());
+  v->setWindowTitle("Derived classes");
   QDockWidget* widget = dock(v, Qt::DockWidgetArea::RightDockWidgetArea);
 
   connect(translationUnit(), &TranslationUnit::aboutToBeDestroyed, this, [this, widget]() {

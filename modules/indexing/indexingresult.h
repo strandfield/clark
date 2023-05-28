@@ -20,9 +20,6 @@
 namespace clark
 {
 
-struct BaseClass;
-struct Entity;
-
 struct IndexingResult
 {
   std::chrono::milliseconds indexing_time;

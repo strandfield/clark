@@ -70,6 +70,8 @@ protected:
 
   void createEntityView();
 
+  void createDerivedClassesWidget();
+
 private:
   TranslationUnit* m_translation_unit = nullptr;
   TranslationUnitHandle m_handle;
@@ -82,6 +84,7 @@ private:
   QAction* m_view_files_action = nullptr;
   QAction* m_astview_action = nullptr;
   QAction* m_view_symbols_action = nullptr;
+  QAction* m_view_derivedclasses_action = nullptr;
   /* Central widget */
   QTabWidget* m_documents_tab_widget = nullptr;
 };

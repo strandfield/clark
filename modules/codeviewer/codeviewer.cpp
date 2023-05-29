@@ -9,6 +9,7 @@
 #include "symbolinfoprovider.h"
 
 #include <QFile>
+#include <QMenu>
 
 #include <QDebug>
 
@@ -123,6 +124,17 @@ void CodeViewer::mouseMoveEvent(QMouseEvent* ev)
   updateTokenUnderCursor(c);
 
   QPlainTextEdit::mouseMoveEvent(ev);
+}
+
+void CodeViewer::contextMenuEvent(QContextMenuEvent* ev)
+{
+  QMenu* menu = createStandardContextMenu(ev->pos());
+
+  Q_EMIT contextMenuRequested(menu);
+
+  menu->exec(ev->globalPos());
+
+  delete menu;
 }
 
 void CodeViewer::updateTokenUnderCursor(const QTextCursor& cursor)
@@ -322,4 +334,21 @@ void CodeViewer::refreshExtraSelections()
   }
 
   setExtraSelections(extraSelections);
+}
+
+
+CodeViewerContextMenuHandler::CodeViewerContextMenuHandler(CodeViewer& viewer) : QObject(&viewer),
+  m_viewer(viewer)
+{
+  connect(&m_viewer, &CodeViewer::contextMenuRequested, this, &CodeViewerContextMenuHandler::onContextMenuRequested);
+}
+
+CodeViewer& CodeViewerContextMenuHandler::codeviewer() const
+{
+  return m_viewer;
+}
+
+void CodeViewerContextMenuHandler::onContextMenuRequested(QMenu* menu)
+{
+  fill(menu);
 }

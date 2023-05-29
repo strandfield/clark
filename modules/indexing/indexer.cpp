@@ -399,6 +399,17 @@ IndexingResult index_translation_unit(libclang::Index& index, libclang::Translat
   return std::move(tui.result);
 }
 
+/**
+ * \brief retrieves the content of a file from the translation unit
+ * \param tunit  the translation unit
+ * \param file   the indexer file
+ */
+const char* get_file_contents(const libclang::TranslationUnit& tunit, const File& file)
+{
+  libclang::File clangfile = tunit.getFile(file.path);
+  return tunit.getFileContents(clangfile);
+}
+
 } // namespace clark
 
 

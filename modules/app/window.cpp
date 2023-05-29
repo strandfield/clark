@@ -4,6 +4,8 @@
 
 #include "window.h"
 
+#include "action/codevieweractions.h"
+
 #include "dialogs/aboutdialog.h"
 #include "dialogs/openslndialog.h"
 
@@ -13,6 +15,7 @@
 #include "widget/clangfileviewer.h"
 #include "widget/derivedclasseswidget.h"
 #include "widget/filewidget.h"
+#include "widget/findreferenceswidget.h"
 
 #include "application.h"
 #include "settings.h"
@@ -391,6 +394,8 @@ void Window::gotoDocumentLine(const QString& path, int l)
 
 void Window::addCodeviewer(CodeViewer* viewer, bool connectSignals)
 {
+  viewer->addContextMenuHandler<CodeViewerClangActions>(*this);
+
   QString path = viewer->documentPath();
   int tabindex = m_documents_tab_widget->addTab(viewer, QFileInfo(path).fileName());
   m_documents_tab_widget->setTabToolTip(tabindex, path);
@@ -502,6 +507,21 @@ void Window::createDerivedClassesWidget()
   auto* v = new DerivedClassesWidget(translationUnitIndexing());
   v->setWindowTitle("Derived classes");
   QDockWidget* widget = dock(v, Qt::DockWidgetArea::RightDockWidgetArea);
+
+  connect(translationUnit(), &TranslationUnit::aboutToBeDestroyed, this, [this, widget]() {
+    removeDockWidget(widget);
+    delete widget;
+    });
+}
+
+void Window::createFindReferencesWidget(const clark::Entity* e)
+{
+  auto* v = new FindReferencesWidget(translationUnitIndexing(), e);
+
+  connect(v, &FindReferencesWidget::referenceClicked, this, &Window::gotoDocumentLine);
+
+  v->setWindowTitle("Find References '" + QString::fromStdString(e->display_name) + "'");
+  QDockWidget* widget = dock(v, Qt::DockWidgetArea::BottomDockWidgetArea);
 
   connect(translationUnit(), &TranslationUnit::aboutToBeDestroyed, this, [this, widget]() {
     removeDockWidget(widget);

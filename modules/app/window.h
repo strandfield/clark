@@ -16,6 +16,11 @@ namespace libclang
 class Cursor;
 } // namespace libclang
 
+namespace clark
+{
+struct Entity;
+} // namespace clark
+
 class CodeViewer;
 class TranslationUnitIndexing;
 
@@ -33,6 +38,8 @@ public:
   TranslationUnitIndexing* translationUnitIndexing() const;
 
   void closeAllDocuments();
+
+  void createFindReferencesWidget(const clark::Entity* e);
 
 protected Q_SLOTS:
   void about();

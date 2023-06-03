@@ -20,7 +20,7 @@ Application::Application(int& argc, char** argv)
 
   Settings& settings = init<Settings>();
 
-  init<LibClang>();
+  init<LibClang>(settings.value(Settings::libclangPathKey()).toString());
 }
 
 Application& Application::instance()

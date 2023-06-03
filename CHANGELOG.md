@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 - Add "Symbols" view
 - Add "Derived classes" view
 - Add "Find references" action in codeviewer context menu
+- Add "Settings" dialog (for specifying the path to libclang)
+- Display information message at startup if libclang cannot be found
 
 ### Changed
 

@@ -21,6 +21,7 @@ namespace clark
 struct Entity;
 } // namespace clark
 
+class Application;
 class CodeViewer;
 class TranslationUnitIndexing;
 
@@ -28,7 +29,7 @@ class Window : public QMainWindow
 {
   Q_OBJECT
 public:
-  explicit Window(TranslationUnit* tu = nullptr);
+  explicit Window(Application& app, TranslationUnit* tu = nullptr);
 
   TranslationUnit* translationUnit() const;
   void setTranslationUnit(TranslationUnit* tu);
@@ -50,6 +51,7 @@ protected:
   void setupUi();
 
 protected:
+  void showEvent(QShowEvent* ev) override;
   void closeEvent(QCloseEvent* ev) override;
 
 protected Q_SLOTS:
@@ -79,19 +81,27 @@ protected:
 
   void createDerivedClassesWidget();
 
+  void checkLibClangPath();
+
+  void openSettingsDialog();
+
 private:
   TranslationUnit* m_translation_unit = nullptr;
   TranslationUnitHandle m_handle;
   TranslationUnitIndexing* m_translation_unit_indexing = nullptr;
 
 private:
+  Application& m_app;
   /* File menu */
+  QAction* m_new_tu_action = nullptr;
   QAction* m_close_action = nullptr;
   /* View menu */
   QAction* m_view_files_action = nullptr;
   QAction* m_astview_action = nullptr;
   QAction* m_view_symbols_action = nullptr;
   QAction* m_view_derivedclasses_action = nullptr;
+  /* Settings menu */
+  QAction* m_settings_action = nullptr;
   /* Central widget */
   QTabWidget* m_documents_tab_widget = nullptr;
 };

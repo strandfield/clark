@@ -8,6 +8,7 @@
 
 #include "dialogs/aboutdialog.h"
 #include "dialogs/openslndialog.h"
+#include "dialogs/settingsdialog.h"
 
 #include "view/astview.h"
 #include "view/entityview.h"
@@ -48,9 +49,12 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
+#include <QTimer>
+
 #include <QDebug>
 
-Window::Window(TranslationUnit* tu)
+Window::Window(Application& app, TranslationUnit* tu) :
+  m_app(app)
 {
   setWindowTitle("Clark");
   setAttribute(Qt::WA_DeleteOnClose);
@@ -59,18 +63,20 @@ Window::Window(TranslationUnit* tu)
 
   if (tu)
     setTranslationUnit(tu);
+
+  connect(m_app.find<LibClang>(), &LibClang::libclangAvailableChanged, this, &Window::refreshUi);
 }
 
 void Window::setupUi()
 {
   {
     QMenu* menu = menuBar()->addMenu("&File");
-    menu->addAction("New Translation Unit...", this, &Window::newTranslationUnit);
+    m_new_tu_action = menu->addAction("New Translation Unit...", this, &Window::newTranslationUnit);
 
     m_close_action = menu->addAction("&Close", this, &Window::closeTranslationUnit);
 
     menu->addSeparator();
-    menu->addAction("&Exit", qApp, &QApplication::quit)->setShortcut(QKeySequence("Alt+F4"));
+    menu->addAction("&Exit", &m_app, &QApplication::quit)->setShortcut(QKeySequence("Alt+F4"));
   }
 
   {
@@ -83,8 +89,12 @@ void Window::setupUi()
   }
 
   {
+    m_settings_action = menuBar()->addAction("Settings", this, &Window::openSettingsDialog);
+  }
+
+  {
     QMenu* menu = menuBar()->addMenu("&Help");
-    menu->addAction("About Qt", qApp, &QApplication::aboutQt);
+    menu->addAction("About Qt", &m_app, &QApplication::aboutQt);
     menu->addAction("About", this, &Window::about);
   }
 
@@ -98,7 +108,7 @@ void Window::setupUi()
 
   refreshUi();
 
-  QVariant geom = ClarkApp.settings().value("window/geometry");
+  QVariant geom = m_app.settings().value("window/geometry");
 
   if (geom.isValid())
     restoreGeometry(geom.toByteArray());
@@ -121,7 +131,7 @@ void Window::setTranslationUnit(TranslationUnit* tu)
     {
       if (!m_translation_unit->clangIndex())
       {
-        LibClang& lib = ClarkApp.get<LibClang>();
+        LibClang& lib = m_app.get<LibClang>();
         auto* index = new ClangIndex(lib, this);
         m_translation_unit->setClangIndex(index);
       }
@@ -199,13 +209,20 @@ void Window::newTranslationUnit()
   }
 }
 
+void Window::showEvent(QShowEvent* ev)
+{
+  QMainWindow::showEvent(ev);
+
+  QTimer::singleShot(1000, this, &Window::checkLibClangPath);
+}
+
 void Window::closeEvent(QCloseEvent* ev)
 {
-  ClarkApp.settings().setValue("window/geometry", saveGeometry());
+  m_app.settings().setValue("window/geometry", saveGeometry());
 
   closeTranslationUnit();
 
-  QWidget::closeEvent(ev);
+  QMainWindow::closeEvent(ev);
 }
 
 void Window::refreshUi()
@@ -213,6 +230,7 @@ void Window::refreshUi()
   bool has_tunit = translationUnit() != nullptr;
   bool has_idx = translationUnitIndexing() != nullptr;
 
+  m_new_tu_action->setEnabled(m_app.get<LibClang>().libclangAvailable());
   m_close_action->setEnabled(has_tunit);
   m_view_files_action->setEnabled(has_idx);
   m_astview_action->setEnabled(has_tunit);
@@ -527,4 +545,28 @@ void Window::createFindReferencesWidget(const clark::Entity* e)
     removeDockWidget(widget);
     delete widget;
     });
+}
+
+void Window::checkLibClangPath()
+{
+  if (!m_app.get<LibClang>().libclangAvailable())
+  {
+    const char* mssg =
+      "libclang could not be loaded.\n"
+      "Please specify the path to libclang in the Settings dialog.\n"
+      "Do you wish to open the settings dialog now ?";
+
+    int btn = QMessageBox::warning(this, "libclang missing", mssg, QMessageBox::Yes, QMessageBox::No);
+
+    if (btn == QMessageBox::Yes)
+    {
+      openSettingsDialog();
+    }
+  }
+}
+
+void Window::openSettingsDialog()
+{
+  SettingsDialog dialog{ m_app };
+  dialog.exec();
 }

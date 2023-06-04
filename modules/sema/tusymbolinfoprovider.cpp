@@ -31,7 +31,7 @@ TranslationUnitSymbolInfoProvider::~TranslationUnitSymbolInfoProvider()
 
 TranslationUnitSymbolInfoProvider::Features TranslationUnitSymbolInfoProvider::features() const
 {
-  return Feature::SymbolAtLocation | Feature::ReferencesInDocument;
+  return { Feature::SymbolAtLocation, Feature::ReferencesInDocument };
 }
 
 SymbolObject* TranslationUnitSymbolInfoProvider::getSymbol(const TokenInfo& tokinfo)

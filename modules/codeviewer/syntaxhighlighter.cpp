@@ -6,6 +6,7 @@
 
 #include <QTextDocument>
 
+#include <cstring>
 #include <set>
 
 CppSyntaxHighlighter::CppSyntaxHighlighter(QTextDocument* document) : QSyntaxHighlighter(document)

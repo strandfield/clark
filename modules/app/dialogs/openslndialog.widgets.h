@@ -5,11 +5,14 @@
 #ifndef CLARK_OPENSLNDIALOG_WIDGETS_H
 #define CLARK_OPENSLNDIALOG_WIDGETS_H
 
-#include <vcxproj/solution.h>
-
 #include <QListWidget>
 
 #include <optional>
+
+namespace vcxproj
+{
+struct Solution;
+} // namespace vcxproj
 
 class SlnProjectListWidget : public QListWidget
 {

@@ -13,6 +13,8 @@
 
 #include <QDebug>
 
+#include <cstring>
+
 ClangSyntaxHighlighter::ClangSyntaxHighlighter(TranslationUnitHandle thandle, const libclang::File& file, QTextDocument* document) 
   : CppSyntaxHighlighter(document),
   m_thandle(thandle),

@@ -6,9 +6,14 @@
 
 #include <QDebug>
 
-LibClang::LibClang(QObject* parent) : QObject(parent)
+LibClang::LibClang(QObject* parent) : LibClang(QString(), parent)
 {
-  tryLoadLibclang();
+
+}
+
+LibClang::LibClang(const QString& libclangPath, QObject* parent) : QObject(parent)
+{
+  tryLoadLibclang(libclangPath);
 }
 
 LibClang::~LibClang()
@@ -16,7 +21,13 @@ LibClang::~LibClang()
 
 }
 
-std::shared_ptr<libclang::LibClang> LibClang::libclang() const
+void LibClang::setLibrary(std::shared_ptr<libclang::LibClang> lib)
+{
+  m_libclang_library = lib;
+  Q_EMIT libclangAvailableChanged();
+}
+
+std::shared_ptr<libclang::LibClang> LibClang::library() const
 {
   return m_libclang_library;
 }
@@ -26,22 +37,26 @@ bool LibClang::libclangAvailable() const
   return libclang() != nullptr;
 }
 
-bool LibClang::tryLoadLibclang()
+bool LibClang::tryLoadLibclang(const QString& path)
 {
   if (libclangAvailable())
     return true;
 
-  try 
+  setLibrary(tryLoad(path));
+
+  return libclangAvailable();
+}
+
+std::shared_ptr<libclang::LibClang> LibClang::tryLoad(const QString& path)
+{
+  try
   {
-    m_libclang_library = std::make_shared<libclang::LibClang>();
+    return std::make_shared<libclang::LibClang>(path.isEmpty() ? std::string("libclang") : path.toStdString());
   }
-  catch (std::exception& ex) 
+  catch (std::exception& ex)
   {
     qDebug() << ex.what();
-    return false;
   }
-  
-  Q_EMIT libclangAvailableChanged();
 
-  return true;
+  return nullptr;
 }

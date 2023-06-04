@@ -18,6 +18,8 @@ namespace clark
 
 IndexingResult index_translation_unit(libclang::Index& index, libclang::TranslationUnit& tunit);
 
+const char* get_file_contents(const libclang::TranslationUnit& tunit, const File& file);
+
 } // namespace clark
 
 class TranslationUnitIndexing : public QObject
@@ -53,6 +55,5 @@ private:
   State m_state = Init;
   clark::IndexingResult m_result;
 };
-
 
 #endif // CLARK_INDEXER_H

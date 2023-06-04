@@ -30,6 +30,8 @@ public:
   QString readString(const QString& key, const QString& defaultValue = QString()) const;
   void writeString(const QString& key, const QString& val);
 
+  static QString libclangPathKey();
+
 Q_SIGNALS:
   void valueChanged(const QString& key);
 };

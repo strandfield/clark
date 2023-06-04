@@ -72,7 +72,7 @@ libclang::TranslationUnit& AstModel::clangTranslationUnit() const
 
 int AstModel::columnCount(const QModelIndex& /* parent */) const
 {
-  return 1;
+  return 2;
 }
 
 int AstModel::rowCount(const QModelIndex& parent) const
@@ -145,6 +145,19 @@ QModelIndex AstModel::parent(const QModelIndex& index) const
   return createIndex(row, 0, m_db->getPtr(parent));
 }
 
+QVariant AstModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+  if (role == Qt::DisplayRole)
+  {
+    if (section == 0)
+      return QString("CursorKind");
+    else if (section == 1)
+      return QString("DisplayName");
+  }
+
+  return QVariant();
+}
+
 QVariant AstModel::data(const QModelIndex& index, int role) const
 {
   Node* n = convert(index);
@@ -156,14 +169,17 @@ QVariant AstModel::data(const QModelIndex& index, int role) const
 
   if (role == Qt::DisplayRole || role == Qt::EditRole)
   {
-    std::string display_name = c.getDisplayName();
-
-    if (!display_name.empty())
+    if (index.column() == 0)
+    {
+      return QString::fromStdString(c.getCursorKindSpelling());
+    }
+    else if (index.column() == 1)
+    {
+      std::string display_name = c.getDisplayName();
       return QString::fromStdString(display_name);
-
-    return QString::fromStdString(c.getCursorKindSpelling());
+    }
   }
-  else if (role == Qt::DecorationRole)
+  else if (index.column() == 0 && role == Qt::DecorationRole)
   {
     return iconForCursor(c);
   }

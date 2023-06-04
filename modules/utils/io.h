@@ -14,6 +14,7 @@ namespace clark
 namespace io
 {
 
+bool exists(const QString& path);
 QByteArray read_from_disk(const QString& path);
 
 } // namespace io

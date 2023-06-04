@@ -9,6 +9,11 @@
 namespace clark
 {
 
+/**
+ * \brief finds an entity given its USR
+ * \param idx  the indexing results
+ * \param usr  the usr
+ */
 const Entity* find_entity(const IndexingResult& idx, const USR& usr)
 {
   auto it = idx.symbols.find(usr);

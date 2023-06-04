@@ -13,6 +13,15 @@ namespace io
 {
 
 /**
+ * \brief returns whether a file exists on disk
+ * \param path  the filepath
+ */
+bool exists(const QString& path)
+{
+  return QFile::exists(path);
+}
+
+/**
  * \brief reads the content of a file on disk
  * \param path  the filepath
  */

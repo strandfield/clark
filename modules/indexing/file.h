@@ -12,6 +12,7 @@ namespace clark
 
 struct File
 {
+  // $todo: add 'myfile' flag
   std::string path;
 };
 

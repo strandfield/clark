@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
   app.setQuitOnLastWindowClosed(false);
 
-  auto* window = new Window;
+  auto* window = new Window(app);
   window->show();
 
   QObject::connect(&app, &QGuiApplication::lastWindowClosed, &app, [&]() {

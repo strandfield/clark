@@ -9,6 +9,7 @@
 #include "symbolinfoprovider.h"
 
 #include <QFile>
+#include <QMenu>
 
 #include <QDebug>
 
@@ -20,19 +21,37 @@ CodeViewer::CodeViewer(const QString& documentPath, const QString& documentConte
   setMouseTracking(true);
 
   setPlainText(documentContent);
-  document()->setMetaInformation(QTextDocument::MetaInformation::DocumentUrl, documentPath);
+  document()->setMetaInformation(QTextDocument::MetaInformation::DocumentUrl, QString(documentPath).replace('\\', '/'));
 
-  m_syntax_highlighter = new SyntaxHighlighter(document());
+  m_syntax_highlighter = new CpptokSyntaxHighlighter(document());
 }
 
+/**
+ * \brief returns the path of the document
+ * 
+ * This is the "generic" path (i.e., with forward slashes).
+ */
 QString CodeViewer::documentPath() const
 {
   return document()->metaInformation(QTextDocument::MetaInformation::DocumentUrl);
 }
 
-SyntaxHighlighter* CodeViewer::syntaxHighlighter() const
+CppSyntaxHighlighter* CodeViewer::syntaxHighlighter() const
 {
   return m_syntax_highlighter;
+}
+
+void CodeViewer::setSyntaxHighlighter(CppSyntaxHighlighter* highlighter)
+{
+  if (m_syntax_highlighter)
+  {
+    delete m_syntax_highlighter;
+  }
+
+  m_syntax_highlighter = highlighter;
+
+  if (m_syntax_highlighter)
+    m_syntax_highlighter->rehighlight();
 }
 
 QFont CodeViewer::courierFont()
@@ -105,6 +124,17 @@ void CodeViewer::mouseMoveEvent(QMouseEvent* ev)
   updateTokenUnderCursor(c);
 
   QPlainTextEdit::mouseMoveEvent(ev);
+}
+
+void CodeViewer::contextMenuEvent(QContextMenuEvent* ev)
+{
+  QMenu* menu = createStandardContextMenu(ev->pos());
+
+  Q_EMIT contextMenuRequested(menu);
+
+  menu->exec(ev->globalPos());
+
+  delete menu;
 }
 
 void CodeViewer::updateTokenUnderCursor(const QTextCursor& cursor)
@@ -304,4 +334,21 @@ void CodeViewer::refreshExtraSelections()
   }
 
   setExtraSelections(extraSelections);
+}
+
+
+CodeViewerContextMenuHandler::CodeViewerContextMenuHandler(CodeViewer& viewer) : QObject(&viewer),
+  m_viewer(viewer)
+{
+  connect(&m_viewer, &CodeViewer::contextMenuRequested, this, &CodeViewerContextMenuHandler::onContextMenuRequested);
+}
+
+CodeViewer& CodeViewerContextMenuHandler::codeviewer() const
+{
+  return m_viewer;
+}
+
+void CodeViewerContextMenuHandler::onContextMenuRequested(QMenu* menu)
+{
+  fill(menu);
 }

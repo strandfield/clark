@@ -4,15 +4,23 @@
 
 #include "window.h"
 
+#include "action/codevieweractions.h"
+
 #include "dialogs/aboutdialog.h"
 #include "dialogs/openslndialog.h"
+#include "dialogs/settingsdialog.h"
 
 #include "view/astview.h"
+#include "view/entityview.h"
+
+#include "widget/clangfileviewer.h"
+#include "widget/derivedclasseswidget.h"
+#include "widget/filewidget.h"
+#include "widget/findreferenceswidget.h"
 
 #include "application.h"
 #include "settings.h"
 
-#include <sema/tunameresolver.h>
 #include <sema/tusymbolinfoprovider.h>
 
 #include <indexing/indexer.h>
@@ -24,6 +32,8 @@
 #include <program/libclang.h>
 
 #include <utils/io.h>
+
+#include <libclang-utils/clang-translation-unit.h>
 
 #include <QAction>
 #include <QDockWidget>
@@ -39,9 +49,12 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
+#include <QTimer>
+
 #include <QDebug>
 
-Window::Window(TranslationUnit* tu)
+Window::Window(Application& app, TranslationUnit* tu) :
+  m_app(app)
 {
   setWindowTitle("Clark");
   setAttribute(Qt::WA_DeleteOnClose);
@@ -50,23 +63,38 @@ Window::Window(TranslationUnit* tu)
 
   if (tu)
     setTranslationUnit(tu);
+
+  connect(m_app.find<LibClang>(), &LibClang::libclangAvailableChanged, this, &Window::refreshUi);
 }
 
 void Window::setupUi()
 {
   {
     QMenu* menu = menuBar()->addMenu("&File");
-    menu->addAction("New Translation Unit...", this, &Window::newTranslationUnit);
+    m_new_tu_action = menu->addAction("New Translation Unit...", this, &Window::newTranslationUnit);
 
     m_close_action = menu->addAction("&Close", this, &Window::closeTranslationUnit);
 
     menu->addSeparator();
-    menu->addAction("&Exit", qApp, &QApplication::quit)->setShortcut(QKeySequence("Alt+F4"));
+    menu->addAction("&Exit", &m_app, &QApplication::quit)->setShortcut(QKeySequence("Alt+F4"));
+  }
+
+  {
+    QMenu* menu = menuBar()->addMenu("&View");
+
+    m_view_files_action = menu->addAction("&File", this, &Window::createFileWidget);
+    m_astview_action = menu->addAction("AST", this, &Window::createAstView);
+    m_view_symbols_action = menu->addAction("Symbols", this, &Window::createEntityView);
+    m_view_derivedclasses_action = menu->addAction("Derived classes", this, &Window::createDerivedClassesWidget);
+  }
+
+  {
+    m_settings_action = menuBar()->addAction("Settings", this, &Window::openSettingsDialog);
   }
 
   {
     QMenu* menu = menuBar()->addMenu("&Help");
-    menu->addAction("About Qt", qApp, &QApplication::aboutQt);
+    menu->addAction("About Qt", &m_app, &QApplication::aboutQt);
     menu->addAction("About", this, &Window::about);
   }
 
@@ -80,7 +108,7 @@ void Window::setupUi()
 
   refreshUi();
 
-  QVariant geom = ClarkApp.settings().value("window/geometry");
+  QVariant geom = m_app.settings().value("window/geometry");
 
   if (geom.isValid())
     restoreGeometry(geom.toByteArray());
@@ -103,7 +131,7 @@ void Window::setTranslationUnit(TranslationUnit* tu)
     {
       if (!m_translation_unit->clangIndex())
       {
-        LibClang& lib = ClarkApp.get<LibClang>();
+        LibClang& lib = m_app.get<LibClang>();
         auto* index = new ClangIndex(lib, this);
         m_translation_unit->setClangIndex(index);
       }
@@ -181,18 +209,33 @@ void Window::newTranslationUnit()
   }
 }
 
+void Window::showEvent(QShowEvent* ev)
+{
+  QMainWindow::showEvent(ev);
+
+  QTimer::singleShot(1000, this, &Window::checkLibClangPath);
+}
+
 void Window::closeEvent(QCloseEvent* ev)
 {
-  ClarkApp.settings().setValue("window/geometry", saveGeometry());
+  m_app.settings().setValue("window/geometry", saveGeometry());
 
   closeTranslationUnit();
 
-  QWidget::closeEvent(ev);
+  QMainWindow::closeEvent(ev);
 }
 
 void Window::refreshUi()
 {
-  m_close_action->setEnabled(translationUnit() != nullptr);
+  bool has_tunit = translationUnit() != nullptr;
+  bool has_idx = translationUnitIndexing() != nullptr;
+
+  m_new_tu_action->setEnabled(m_app.get<LibClang>().libclangAvailable());
+  m_close_action->setEnabled(has_tunit);
+  m_view_files_action->setEnabled(has_idx);
+  m_astview_action->setEnabled(has_tunit);
+  m_view_symbols_action->setEnabled(has_idx);
+  m_view_derivedclasses_action->setEnabled(has_idx);
 }
 
 void Window::onTranslationUnitLoaded()
@@ -213,8 +256,6 @@ void Window::onTranslationUnitLoaded()
 
   m_translation_unit_indexing->start();
 
-  createAstView();
-
   refreshUi();
 }
 
@@ -223,6 +264,8 @@ void Window::onTranslationUnitIndexingReady()
   const clark::IndexingResult& idx = translationUnitIndexing()->indexingResult();
   int duration = std::chrono::duration_cast<std::chrono::milliseconds>(idx.indexing_time).count();
   statusBar()->showMessage(QString("Indexing completed! (%1ms)").arg(QString::number(duration)), 500);
+
+  refreshUi();
 }
 
 QDockWidget* Window::dock(QWidget* w, Qt::DockWidgetArea area)
@@ -257,18 +300,20 @@ void Window::onHandleReady()
   {
     auto* viewer = qobject_cast<CodeViewer*>(m_documents_tab_widget->widget(i));
 
-    if (!viewer)
+    if (!viewer || qobject_cast<ClangFileViewer*>(viewer))
       continue;
 
-    if (!qobject_cast<TranslationUnitNameResolver*>(&viewer->syntaxHighlighter()->nameResolver()))
+    libclang::File f = translationUnitHandle().clangTranslationunit().getFile(viewer->documentPath().toStdString());
+
+    if (!f.data)
     {
-      viewer->syntaxHighlighter()->setNameResolver(new TranslationUnitNameResolver(translationUnitHandle(), *viewer->document()));
+      qDebug() << "Translation unit is valid but could not find file: " << viewer->documentPath();
+      continue;
     }
 
-    if (!qobject_cast<TranslationUnitSymbolInfoProvider*>(viewer->symbolInfoProvider()))
-    {
-      viewer->setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(translationUnitHandle(), *viewer->document()));
-    }
+    ClangFileViewer::setup(viewer, translationUnitHandle(), f);
+    connect(viewer, &CodeViewer::symbolUnderCursorClicked, this, &Window::onSymbolClicked);
+    connect(viewer, &CodeViewer::includeDirectiveClicked, this, &Window::gotoDocument);
   }
 }
 
@@ -300,20 +345,39 @@ void Window::closeTranslationUnit()
 
 bool Window::openDocument(const QString& path)
 {
+  if (translationUnitHandle().valid())
+  {
+    libclang::File f = translationUnitHandle().clangTranslationunit().getFile(path.toStdString());
+
+    if (!f.data)
+    {
+      qDebug() << "Translation unit is valid but could not find file: " << path;
+      return openFileOnDisk(path);
+    }
+
+    auto* viewer = new ClangFileViewer(translationUnitHandle(), f);
+
+    addCodeviewer(viewer);
+
+    return true;
+  }
+  else
+  {
+    return openFileOnDisk(path);
+  }
+}
+
+bool Window::openFileOnDisk(const QString& path)
+{
+  if (!clark::io::exists(path))
+    return false;
+
   QString document_content = QString::fromUtf8(clark::io::read_from_disk(path));
 
   auto* viewer = new CodeViewer(path, document_content);
 
-  if (translationUnitHandle().valid())
-  {
-    viewer->syntaxHighlighter()->setNameResolver(new TranslationUnitNameResolver(translationUnitHandle(), *viewer->document()));
-    viewer->setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(translationUnitHandle(), *viewer->document()));
-  }
-
-  m_documents_tab_widget->addTab(viewer, QFileInfo(path).fileName());
-
-  connect(viewer, &CodeViewer::symbolUnderCursorClicked, this, &Window::onSymbolClicked);
-  connect(viewer, &CodeViewer::includeDirectiveClicked, this, &Window::gotoDocument);
+  constexpr bool connect_signals = false;
+  addCodeviewer(viewer, connect_signals);
 
   return true;
 }
@@ -346,14 +410,36 @@ void Window::gotoDocumentLine(const QString& path, int l)
   }
 }
 
+void Window::addCodeviewer(CodeViewer* viewer, bool connectSignals)
+{
+  viewer->addContextMenuHandler<CodeViewerClangActions>(*this);
+
+  QString path = viewer->documentPath();
+  int tabindex = m_documents_tab_widget->addTab(viewer, QFileInfo(path).fileName());
+  m_documents_tab_widget->setTabToolTip(tabindex, path);
+
+  if (connectSignals)
+  {
+    connect(viewer, &CodeViewer::symbolUnderCursorClicked, this, &Window::onSymbolClicked);
+    connect(viewer, &CodeViewer::includeDirectiveClicked, this, &Window::gotoDocument);
+  }
+}
+
 CodeViewer* Window::findCodeviewer(const QString& path) const
 {
+  if (path.contains('\\'))
+  {
+    return findCodeviewer(QString(path).replace('\\', '/'));
+  }
+
   for (int i(0); i < m_documents_tab_widget->count(); ++i)
   {
     auto* cv = qobject_cast<CodeViewer*>(m_documents_tab_widget->widget(i));
 
     if (cv && cv->documentPath() == path)
+    {
       return cv;
+    }
   }
 
   return nullptr;
@@ -388,6 +474,19 @@ void Window::onSymbolClicked()
   }
 }
 
+void Window::createFileWidget()
+{
+  auto* v = new FileWidget(translationUnitIndexing());
+  v->setWindowTitle("Files");
+  connect(v, &FileWidget::fileDoubleClicked, this, &Window::gotoDocument);
+  QDockWidget* widget = dock(v, Qt::DockWidgetArea::RightDockWidgetArea);
+
+  connect(translationUnitIndexing(), &QObject::destroyed, this, [this, widget]() {
+    removeDockWidget(widget);
+    delete widget;
+    });
+}
+
 void Window::createAstView()
 {
   auto* v = new AstView(*translationUnit());
@@ -406,4 +505,68 @@ void Window::onCursorDblClicked(const libclang::Cursor& c)
   libclang::SpellingLocation loc = c.getLocation().getSpellingLocation();
   std::string path = std::filesystem::path(loc.file.getFileName()).generic_u8string();
   gotoDocumentLine(QString::fromStdString(path), loc.line);
+}
+
+void Window::createEntityView()
+{
+  auto* v = new EntityView(translationUnitIndexing());
+  v->setWindowTitle("Symbols");
+  //connect(v, &EntityView::entityDoubleClicked, this, &Window::onEntityDblClicked);
+  QDockWidget* widget = dock(v, Qt::DockWidgetArea::RightDockWidgetArea);
+
+  connect(translationUnit(), &TranslationUnit::aboutToBeDestroyed, this, [this, widget]() {
+    removeDockWidget(widget);
+    delete widget;
+    });
+}
+
+void Window::createDerivedClassesWidget()
+{
+  auto* v = new DerivedClassesWidget(translationUnitIndexing());
+  v->setWindowTitle("Derived classes");
+  QDockWidget* widget = dock(v, Qt::DockWidgetArea::RightDockWidgetArea);
+
+  connect(translationUnit(), &TranslationUnit::aboutToBeDestroyed, this, [this, widget]() {
+    removeDockWidget(widget);
+    delete widget;
+    });
+}
+
+void Window::createFindReferencesWidget(const clark::Entity* e)
+{
+  auto* v = new FindReferencesWidget(translationUnitIndexing(), e);
+
+  connect(v, &FindReferencesWidget::referenceClicked, this, &Window::gotoDocumentLine);
+
+  v->setWindowTitle("Find References '" + QString::fromStdString(e->display_name) + "'");
+  QDockWidget* widget = dock(v, Qt::DockWidgetArea::BottomDockWidgetArea);
+
+  connect(translationUnit(), &TranslationUnit::aboutToBeDestroyed, this, [this, widget]() {
+    removeDockWidget(widget);
+    delete widget;
+    });
+}
+
+void Window::checkLibClangPath()
+{
+  if (!m_app.get<LibClang>().libclangAvailable())
+  {
+    const char* mssg =
+      "libclang could not be loaded.\n"
+      "Please specify the path to libclang in the Settings dialog.\n"
+      "Do you wish to open the settings dialog now ?";
+
+    int btn = QMessageBox::warning(this, "libclang missing", mssg, QMessageBox::Yes, QMessageBox::No);
+
+    if (btn == QMessageBox::Yes)
+    {
+      openSettingsDialog();
+    }
+  }
+}
+
+void Window::openSettingsDialog()
+{
+  SettingsDialog dialog{ m_app };
+  dialog.exec();
 }

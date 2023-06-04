@@ -60,6 +60,7 @@ struct Entity
 
   enum Flag
   {
+    // $todo: add 'mycode' flag
     Local     = 0x0001,
     Public    = 0x0002,
     Protected = 0x0004,
@@ -90,8 +91,6 @@ public:
   {
 
   }
-
-
 };
 
 inline bool is_local(const Entity& s)

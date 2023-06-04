@@ -7,7 +7,7 @@
 
 AstView::AstView(QWidget* parent) : QTreeView(parent)
 {
-  setHeaderHidden(true);
+  setHeaderHidden(false);
 
   setSelectionMode(QAbstractItemView::SingleSelection);
 

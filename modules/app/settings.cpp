@@ -68,3 +68,8 @@ void Settings::writeString(const QString& key, const QString& val)
     Q_EMIT valueChanged(key);
   }
 }
+
+QString Settings::libclangPathKey()
+{
+  return "libclang/path";
+}

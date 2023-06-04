@@ -4,6 +4,8 @@
 
 #include "version.h"
 
+#include <cstring>
+
 namespace clark
 {
 

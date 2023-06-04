@@ -7,7 +7,7 @@
 
 #include <QPlainTextEdit>
 
-class SyntaxHighlighter;
+class CppSyntaxHighlighter;
 
 class IncludesInFile;
 class SymbolObject;
@@ -23,7 +23,8 @@ public:
 
   QString documentPath() const;
 
-  SyntaxHighlighter* syntaxHighlighter() const;
+  CppSyntaxHighlighter* syntaxHighlighter() const;
+  void setSyntaxHighlighter(CppSyntaxHighlighter* highlighter);
 
   static QFont courierFont();
 
@@ -33,8 +34,12 @@ public:
   SymbolObject* symbolUnderCursor() const;
 
   void goToLine(int l);
-  
+
+  template<typename T, typename...Args>
+  T* addContextMenuHandler(Args&&... args);
+
 Q_SIGNALS:
+  void contextMenuRequested(QMenu* menu);
   void symbolUnderCursorChanged();
   void symbolUnderCursorClicked();
   void includeDirectiveClicked(const QString& included_file);
@@ -42,6 +47,7 @@ Q_SIGNALS:
 protected:
   void mousePressEvent(QMouseEvent* ev) override;
   void mouseMoveEvent(QMouseEvent* ev) override;
+  void contextMenuEvent(QContextMenuEvent* ev) override;
 
 protected:
   void updateTokenUnderCursor(const QTextCursor& cursor);
@@ -69,10 +75,34 @@ private:
   };
 
 private:
-  SyntaxHighlighter* m_syntax_highlighter = nullptr;
+  CppSyntaxHighlighter* m_syntax_highlighter = nullptr;
   SymbolInfoProvider* m_info_provider = nullptr;
   TokenUnderCursor m_token_under_cursor;
   IncludesInFile* m_includes = nullptr;
 };
+
+class CodeViewerContextMenuHandler : public QObject
+{
+  Q_OBJECT
+public:
+  explicit CodeViewerContextMenuHandler(CodeViewer& viewer);
+
+  CodeViewer& codeviewer() const;
+
+protected Q_SLOTS:
+  void onContextMenuRequested(QMenu* menu);
+
+protected:
+  virtual void fill(QMenu* menu) = 0;
+
+private:
+  CodeViewer& m_viewer;
+};
+
+template<typename T, typename...Args>
+inline T* CodeViewer::addContextMenuHandler(Args&&... args)
+{
+  return new T(std::forward<Args>(args)..., *this);
+}
 
 #endif // CLARK_CODEVIEWER_H

@@ -5,9 +5,12 @@
 #ifndef CLARK_OPENSLNDIALOG_H
 #define CLARK_OPENSLNDIALOG_H
 
-#include <vcxproj/solution.h>
-
+// QDialog needs to be included before solution.h because Qt moc seems 
+// to have some issue (on Linux) when <filesystem> is included first.
+// See https://stackoverflow.com/questions/69407237/qt-moc-errorusr-include-c-10-bits-fs-fwd-39-parse-error-at-std
 #include <QDialog>
+
+#include <vcxproj/solution.h>
 
 #include <memory>
 

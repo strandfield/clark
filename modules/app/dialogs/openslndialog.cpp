@@ -215,6 +215,11 @@ OpenSlnDialog::OpenSlnDialog(vcxproj::Solution s, QWidget* parent) : QDialog(par
 
   m_projects_widget = new SlnProjectListWidget(m_solution);
   m_configs_widget = new SlnProjectConfigurationListWidget();
+
+  auto* instruction_display = new QLabel(
+    "Select a translation unit: "
+  );
+
   m_compiles_widget = new SlnCompileListWidget(m_solution);
 
   m_ok_button = new QPushButton("Ok");
@@ -238,6 +243,7 @@ OpenSlnDialog::OpenSlnDialog(vcxproj::Solution s, QWidget* parent) : QDialog(par
       layout->addLayout(sublayout);
     }
 
+    layout->addWidget(instruction_display, 0, Qt::AlignLeft);
     layout->addWidget(m_compiles_widget);
 
     {
@@ -267,6 +273,11 @@ OpenSlnDialog::OpenSlnDialog(vcxproj::Solution s, QWidget* parent) : QDialog(par
 
     connect(m_compiles_widget, &SlnCompileListWidget::selectionChanged, this, [this]() {
       m_ok_button->setEnabled(m_compiles_widget->selection().has_value());
+      });
+
+    connect(m_compiles_widget, &SlnCompileListWidget::itemDoubleClicked, this, [this](QListWidgetItem* item) {
+      m_compiles_widget->setCurrentItem(item);
+      this->accept();
       });
 
     connect(m_ok_button, &QPushButton::clicked, this, &QDialog::accept);

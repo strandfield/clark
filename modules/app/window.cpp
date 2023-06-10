@@ -21,7 +21,7 @@
 #include "application.h"
 #include "settings.h"
 
-#include <sema/tusymbolinfoprovider.h>
+#include <sema/clangsemainfoprovider.h>
 
 #include <indexing/indexer.h>
 

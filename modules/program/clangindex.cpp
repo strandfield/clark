@@ -189,11 +189,6 @@ void ClangIndex::manage(TranslationUnit* tu)
 
   if (tu->state() == TranslationUnit::AwaitingParsing)
   {
-    // $todo: check if tu has data in db, otherwise parse
-    // ...
-    // in fact no,
-    // if tu was loaded from database, it should already have the SavedIntoDatbase flag,
-    // so check that instead right way
     scheduleParsing(tu);
   }
 }

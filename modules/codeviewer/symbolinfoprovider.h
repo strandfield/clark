@@ -13,12 +13,18 @@
 
 class IncludesInFile;
 
-class SymbolInfoProvider : public QObject
+/**
+ * \brief base class for all semantic info providers
+ * 
+ * A Semantic Information Provider provides semantic information about a C++ program
+ * to the CodeViewer class.
+ */
+class SemaInfoProvider : public QObject
 {
   Q_OBJECT
 public:
-  explicit SymbolInfoProvider(QObject* parent = nullptr);
-  ~SymbolInfoProvider();
+  explicit SemaInfoProvider(QObject* parent = nullptr);
+  ~SemaInfoProvider();
 
   enum Feature
   {

@@ -2,8 +2,8 @@
 // This file is part of the 'clark' project.
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
-#ifndef CLARK_TUINCLUDESINFILE_H
-#define CLARK_TUINCLUDESINFILE_H
+#ifndef CLARK_CLANGINCLUDESINFILE_H
+#define CLARK_CLANGINCLUDESINFILE_H
 
 #include "codeviewer/includes.h"
 
@@ -12,12 +12,18 @@
 
 #include <QFuture>
 
-class TranslationUnitIncludesInFile : public IncludesInFile
+/**
+ * \brief list includes in a file with libclang
+ *
+ * This class uses clang_findIncludesInFile() internally to list the #includes in
+ * a file.
+ */
+class ClangIncludesInFile : public IncludesInFile
 {
   Q_OBJECT
 public:
-  explicit TranslationUnitIncludesInFile(const libclang::TranslationUnit& tu, const QString& filePath, const libclang::File& file, QObject* parent = nullptr);
-  ~TranslationUnitIncludesInFile();
+  explicit ClangIncludesInFile(const libclang::TranslationUnit& tu, const QString& filePath, const libclang::File& file, QObject* parent = nullptr);
+  ~ClangIncludesInFile();
 
   const libclang::TranslationUnit& translationUnit() const;
   const libclang::File& file() const;
@@ -31,4 +37,4 @@ private:
   QFuture<std::vector<Include>> m_find_includes_future;
 };
 
-#endif // CLARK_TUINCLUDESINFILE_H
+#endif // CLARK_CLANGINCLUDESINFILE_H

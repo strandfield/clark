@@ -5,8 +5,8 @@
 #include "codeviewer.h"
 
 #include "includes.h"
+#include "semainfoprovider.h"
 #include "syntaxhighlighter.h"
-#include "symbolinfoprovider.h"
 
 #include <QFile>
 #include <QMenu>
@@ -64,12 +64,12 @@ QFont CodeViewer::courierFont()
   return cache;
 }
 
-SymbolInfoProvider* CodeViewer::symbolInfoProvider() const
+SemaInfoProvider* CodeViewer::semaInfoProvider() const
 {
   return m_info_provider;
 }
 
-void CodeViewer::setSymbolInfoProvider(SymbolInfoProvider* provider)
+void CodeViewer::setSemaInfoProvider(SemaInfoProvider* provider)
 {
   clearTokenUnderCursor();
 
@@ -139,7 +139,7 @@ void CodeViewer::contextMenuEvent(QContextMenuEvent* ev)
 
 void CodeViewer::updateTokenUnderCursor(const QTextCursor& cursor)
 {
-  if (!symbolInfoProvider())
+  if (!semaInfoProvider())
     return;
 
   QTextBlock block = cursor.block();
@@ -180,7 +180,7 @@ void CodeViewer::updateTokenUnderCursor(const QTextCursor& cursor)
     tokinfo.document = document();
     tokinfo.token = *tokit;
 
-    SymbolObject* sym = symbolInfoProvider()->getSymbol(tokinfo);
+    SymbolObject* sym = semaInfoProvider()->getSymbol(tokinfo);
     setTokenUnderCursor(line, col, span, sym);
   }
 }
@@ -248,7 +248,7 @@ void CodeViewer::onSymbolUnderCursorChanged()
 
   if (symbolUnderCursor())
   {
-    m_token_under_cursor.references = symbolInfoProvider()->getReferencesInDocument(symbolUnderCursor(), documentPath());
+    m_token_under_cursor.references = semaInfoProvider()->getReferencesInDocument(symbolUnderCursor(), documentPath());
 
     if (m_token_under_cursor.references)
     {
@@ -304,10 +304,10 @@ void CodeViewer::clearIncludes()
 
 void CodeViewer::fetchIncludes()
 {
-  if (!symbolInfoProvider())
+  if (!semaInfoProvider())
     return;
 
-  m_includes = symbolInfoProvider()->getIncludesInFile(documentPath());
+  m_includes = semaInfoProvider()->getIncludesInFile(documentPath());
 
   if (m_includes)
   {

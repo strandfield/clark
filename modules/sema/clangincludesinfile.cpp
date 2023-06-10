@@ -2,7 +2,7 @@
 // This file is part of the 'clark' project.
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
-#include "tuincludesinfile.h"
+#include "clangincludesinfile.h"
 
 #include <libclang-utils/findincludesinfile.h>
 
@@ -11,7 +11,7 @@
 
 #include <QDebug>
 
-std::vector<IncludesInFile::Include> find_includes_in_file(TranslationUnitIncludesInFile* includes)
+std::vector<IncludesInFile::Include> find_includes_in_file(ClangIncludesInFile* includes)
 {
   std::vector<IncludesInFile::Include> list;
 
@@ -28,7 +28,7 @@ std::vector<IncludesInFile::Include> find_includes_in_file(TranslationUnitInclud
   return list;
 }
  
-TranslationUnitIncludesInFile::TranslationUnitIncludesInFile(const libclang::TranslationUnit& tu, const QString& filePath, const libclang::File& file, QObject* parent)
+ClangIncludesInFile::ClangIncludesInFile(const libclang::TranslationUnit& tu, const QString& filePath, const libclang::File& file, QObject* parent)
   : IncludesInFile(filePath, parent),
     m_translation_unit(tu),
     m_file(file)
@@ -36,26 +36,26 @@ TranslationUnitIncludesInFile::TranslationUnitIncludesInFile(const libclang::Tra
   m_find_includes_future = QtConcurrent::run(&find_includes_in_file, this);
 
   auto* watcher = new QFutureWatcher<std::vector<Include>>(this);
-  connect(watcher, &QFutureWatcher<std::vector<Include>>::finished, this, &TranslationUnitIncludesInFile::onFutureFinished);
+  connect(watcher, &QFutureWatcher<std::vector<Include>>::finished, this, &ClangIncludesInFile::onFutureFinished);
   watcher->setFuture(m_find_includes_future);
 }
 
-TranslationUnitIncludesInFile::~TranslationUnitIncludesInFile()
+ClangIncludesInFile::~ClangIncludesInFile()
 {
 
 }
 
-const libclang::TranslationUnit& TranslationUnitIncludesInFile::translationUnit() const
+const libclang::TranslationUnit& ClangIncludesInFile::translationUnit() const
 {
   return m_translation_unit;
 }
 
-const libclang::File& TranslationUnitIncludesInFile::file() const
+const libclang::File& ClangIncludesInFile::file() const
 {
   return m_file;
 }
 
-void TranslationUnitIncludesInFile::onFutureFinished()
+void ClangIncludesInFile::onFutureFinished()
 {
   setIncludesInFile(m_find_includes_future.result());
   setComplete();

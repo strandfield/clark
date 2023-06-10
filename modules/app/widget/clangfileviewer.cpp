@@ -5,7 +5,7 @@
 #include "clangfileviewer.h"
 
 #include "sema/clangsyntaxhighlighter.h"
-#include "sema/tusymbolinfoprovider.h"
+#include "sema/clangsemainfoprovider.h"
 
 #include <libclang-utils/clang-translation-unit.h>
 
@@ -36,5 +36,5 @@ const libclang::File& ClangFileViewer::file() const
 void ClangFileViewer::setup(CodeViewer* viewer, const TranslationUnitHandle& thandle, const libclang::File& file)
 {
   viewer->setSyntaxHighlighter(new ClangSyntaxHighlighter(thandle, file, viewer->document()));
-  viewer->setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(thandle, *viewer->document()));
+  viewer->setSemaInfoProvider(new ClangSemaInfoProvider(thandle, *viewer->document()));
 }

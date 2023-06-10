@@ -7,7 +7,7 @@
 #include "window.h"
 
 #include "indexing/indexer.h"
-#include "sema/tusymbol.h"
+#include "sema/clangsymbol.h"
 
 #include <QMenu>
 
@@ -26,7 +26,7 @@ void CodeViewerClangActions::fill(QMenu* menu)
 {
   SymbolObject* symbol = codeviewer().symbolUnderCursor();
 
-  auto* clangsymbol = qobject_cast<TranslationUnitSymbolObject*>(symbol);
+  auto* clangsymbol = qobject_cast<ClangSymbolObject*>(symbol);
 
   if (!clangsymbol)
     return;

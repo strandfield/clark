@@ -4,37 +4,37 @@
 
 #include "symbolinfoprovider.h"
 
-SymbolInfoProvider::SymbolInfoProvider(QObject* parent) : QObject(parent)
+SemaInfoProvider::SemaInfoProvider(QObject* parent) : QObject(parent)
 {
 
 }
 
-SymbolInfoProvider::~SymbolInfoProvider()
+SemaInfoProvider::~SemaInfoProvider()
 {
 
 }
 
-SymbolInfoProvider::Features SymbolInfoProvider::features() const
+SemaInfoProvider::Features SemaInfoProvider::features() const
 {
   return Feature::None;
 }
 
-bool SymbolInfoProvider::hasFeature(Feature f) const
+bool SemaInfoProvider::hasFeature(Feature f) const
 {
   return features().testFlag(f);
 }
 
-SymbolObject* SymbolInfoProvider::getSymbol(const TokenInfo& /* tokinfo */)
+SymbolObject* SemaInfoProvider::getSymbol(const TokenInfo& /* tokinfo */)
 {
   return nullptr;
 }
 
-SymbolReferencesInDocument* SymbolInfoProvider::getReferencesInDocument(SymbolObject* /* symbol */, const QString& /* filePath */)
+SymbolReferencesInDocument* SemaInfoProvider::getReferencesInDocument(SymbolObject* /* symbol */, const QString& /* filePath */)
 {
   return nullptr;
 }
 
-::IncludesInFile* SymbolInfoProvider::getIncludesInFile(const QString& /* filePath */)
+::IncludesInFile* SemaInfoProvider::getIncludesInFile(const QString& /* filePath */)
 {
   return nullptr;
 }

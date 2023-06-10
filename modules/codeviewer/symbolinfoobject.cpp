@@ -6,7 +6,7 @@
 
 #include <QThread>
 
-SymbolObject::SymbolObject(QObject* parent) : QObject(parent)
+SymbolObject::SymbolObject(QObject* parent) : SemaObject(parent)
 {
 
 }
@@ -63,7 +63,8 @@ bool SymbolObject::isSame(const SymbolObject& other) const
     && id() == other.id();
 }
 
-SymbolInfoObjectBase::SymbolInfoObjectBase(SymbolObject& sym, QObject* parent) : QObject(parent),
+
+SymbolInfoObjectBase::SymbolInfoObjectBase(SymbolObject& sym, QObject* parent) : SemaObject(parent),
   m_symbol(&sym)
 {
 
@@ -74,23 +75,6 @@ SymbolObject* SymbolInfoObjectBase::symbol() const
   return m_symbol.data();
 }
 
-bool SymbolInfoObjectBase::isComplete() const
-{
-  return m_complete;
-}
-
-void SymbolInfoObjectBase::setComplete(bool c)
-{
-  if (m_complete != c)
-  {
-    m_complete = c;
-
-    Q_EMIT completeChanged();
-
-    if (c)
-      Q_EMIT completed();
-  }
-}
 
 SymbolReferencesInDocument::SymbolReferencesInDocument(SymbolObject& sym, const QString& filePath, QObject* parent) : SymbolInfoObjectBase(sym, parent),
   m_filepath(filePath)

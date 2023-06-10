@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-IncludesInFile::IncludesInFile(const QString& filePath, QObject* parent) : QObject(parent),
+IncludesInFile::IncludesInFile(const QString& filePath, QObject* parent) : SemaObject(parent),
   m_filepath(filePath)
 {
 
@@ -15,23 +15,6 @@ IncludesInFile::IncludesInFile(const QString& filePath, QObject* parent) : QObje
 IncludesInFile::~IncludesInFile()
 {
 
-}
-
-bool IncludesInFile::isComplete() const
-{
-  return m_complete;
-}
-
-void IncludesInFile::setComplete(bool c)
-{
-  if (m_complete != c)
-  {
-    m_complete = c;
-    Q_EMIT completeChanged();
-
-    if (c)
-      Q_EMIT completed();
-  }
 }
 
 const QString& IncludesInFile::filePath() const

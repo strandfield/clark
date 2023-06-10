@@ -13,13 +13,16 @@
 
 class QTextDocument;
 
-class TranslationUnitSymbolInfoProvider : public SemaInfoProvider
+/**
+ * \brief provides semantic information within a translation unit using libclang
+ */
+class ClangSemaInfoProvider : public SemaInfoProvider
 {
   Q_OBJECT
 public:
   // $todo: should we pass the document, or rather the document path directly
-  TranslationUnitSymbolInfoProvider(TranslationUnitHandle handle, const QTextDocument& document);
-  ~TranslationUnitSymbolInfoProvider();
+  ClangSemaInfoProvider(TranslationUnitHandle handle, const QTextDocument& document);
+  ~ClangSemaInfoProvider();
 
   Features features() const override;
 

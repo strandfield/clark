@@ -9,7 +9,7 @@
 #include <QtConcurrent> 
 #include <QFutureWatcher>
 
-std::vector<SymbolReferencesInDocument::Position> find_references_in_file(TranslationUnitSymbolReferencesInDocument* references)
+std::vector<SymbolReferencesInDocument::Position> find_references_in_file(ClangSymbolReferencesInDocument* references)
 {
   std::vector<SymbolReferencesInDocument::Position> positions;
 
@@ -26,33 +26,33 @@ std::vector<SymbolReferencesInDocument::Position> find_references_in_file(Transl
   return positions;
 }
  
-TranslationUnitSymbolReferencesInDocument::TranslationUnitSymbolReferencesInDocument(TranslationUnitSymbolObject& sym, const QString& filePath, const libclang::File& file, QObject* parent)
+ClangSymbolReferencesInDocument::ClangSymbolReferencesInDocument(ClangSymbolObject& sym, const QString& filePath, const libclang::File& file, QObject* parent)
   : SymbolReferencesInDocument(sym, filePath, parent),
     m_file(file)
 {
   m_find_references_future = QtConcurrent::run(&find_references_in_file, this);
 
   auto* watcher = new QFutureWatcher<std::vector<Position>>(this);
-  connect(watcher, &QFutureWatcher<std::vector<Position>>::finished, this, &TranslationUnitSymbolReferencesInDocument::onFutureFinished);
+  connect(watcher, &QFutureWatcher<std::vector<Position>>::finished, this, &ClangSymbolReferencesInDocument::onFutureFinished);
   watcher->setFuture(m_find_references_future);
 }
 
-TranslationUnitSymbolReferencesInDocument::~TranslationUnitSymbolReferencesInDocument()
+ClangSymbolReferencesInDocument::~ClangSymbolReferencesInDocument()
 {
 
 }
 
-TranslationUnitSymbolObject* TranslationUnitSymbolReferencesInDocument::symbol() const
+ClangSymbolObject* ClangSymbolReferencesInDocument::symbol() const
 {
-  return static_cast<TranslationUnitSymbolObject*>(SymbolReferencesInDocument::symbol());
+  return static_cast<ClangSymbolObject*>(SymbolReferencesInDocument::symbol());
 }
 
-const libclang::File& TranslationUnitSymbolReferencesInDocument::file() const
+const libclang::File& ClangSymbolReferencesInDocument::file() const
 {
   return m_file;
 }
 
-void TranslationUnitSymbolReferencesInDocument::onFutureFinished()
+void ClangSymbolReferencesInDocument::onFutureFinished()
 {
   setReferencesInFile(m_find_references_future.result());
   setComplete();

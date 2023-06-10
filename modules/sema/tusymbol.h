@@ -9,12 +9,12 @@
 
 #include <libclang-utils/clang-cursor.h>
 
-class TranslationUnitSymbolObject : public SymbolObject
+class ClangSymbolObject : public SymbolObject
 {
   Q_OBJECT
 public:
-  explicit TranslationUnitSymbolObject(const libclang::Cursor& c);
-  ~TranslationUnitSymbolObject();
+  explicit ClangSymbolObject(const libclang::Cursor& c);
+  ~ClangSymbolObject();
 
   const libclang::Cursor& cursor() const;
 

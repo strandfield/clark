@@ -5,20 +5,26 @@
 #ifndef CLARK_TUSYMBOLREFERENCESINDOCUMENT_H
 #define CLARK_TUSYMBOLREFERENCESINDOCUMENT_H
 
-#include "tusymbol.h"
+#include "clangsymbol.h"
 
 #include <libclang-utils/clang-file.h>
 
 #include <QFuture>
 
-class TranslationUnitSymbolReferencesInDocument : public SymbolReferencesInDocument
+/**
+ * \brief list the references of a symbol in a document using libclang
+ * 
+ * This class uses clang_findReferencesInFile() to asynchronously list the references 
+ * of a symbol in a file.
+ */
+class ClangSymbolReferencesInDocument : public SymbolReferencesInDocument
 {
   Q_OBJECT
 public:
-  explicit TranslationUnitSymbolReferencesInDocument(TranslationUnitSymbolObject& sym, const QString& filePath, const libclang::File& file, QObject* parent = nullptr);
-  ~TranslationUnitSymbolReferencesInDocument();
+  explicit ClangSymbolReferencesInDocument(ClangSymbolObject& sym, const QString& filePath, const libclang::File& file, QObject* parent = nullptr);
+  ~ClangSymbolReferencesInDocument();
 
-  TranslationUnitSymbolObject* symbol() const;
+  ClangSymbolObject* symbol() const;
   const libclang::File& file() const;
 
 protected Q_SLOTS:

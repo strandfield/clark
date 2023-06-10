@@ -4,9 +4,9 @@
 
 #include "tusymbolinfoprovider.h"
 
-#include "tusymbol.h"
-#include "tuincludesinfile.h"
-#include "tusymbolreferencesindocument.h"
+#include "clangsymbol.h"
+#include "clangincludesinfile.h"
+#include "clangsymbolreferencesindocument.h"
 
 #include <libclang-utils/clang-cursor.h>
 #include <libclang-utils/clang-source-location.h>
@@ -16,7 +16,7 @@
 
 #include <QDebug>
 
-TranslationUnitSymbolInfoProvider::TranslationUnitSymbolInfoProvider(TranslationUnitHandle handle, const QTextDocument& document) :
+ClangSemaInfoProvider::ClangSemaInfoProvider(TranslationUnitHandle handle, const QTextDocument& document) :
   m_handle(handle)
 {
   QString filepath = document.metaInformation(QTextDocument::DocumentUrl);
@@ -24,17 +24,17 @@ TranslationUnitSymbolInfoProvider::TranslationUnitSymbolInfoProvider(Translation
   m_file = std::make_unique<libclang::File>(tu.getFile(filepath.toStdString()));
 }
 
-TranslationUnitSymbolInfoProvider::~TranslationUnitSymbolInfoProvider()
+ClangSemaInfoProvider::~ClangSemaInfoProvider()
 {
 
 }
 
-TranslationUnitSymbolInfoProvider::Features TranslationUnitSymbolInfoProvider::features() const
+ClangSemaInfoProvider::Features ClangSemaInfoProvider::features() const
 {
-  return { Feature::SymbolAtLocation, Feature::ReferencesInDocument };
+  return { Feature::SymbolAtLocation, Feature::ReferencesInDocument, Feature::IncludesInFile };
 }
 
-SymbolObject* TranslationUnitSymbolInfoProvider::getSymbol(const TokenInfo& tokinfo)
+SymbolObject* ClangSemaInfoProvider::getSymbol(const TokenInfo& tokinfo)
 {
   const libclang::TranslationUnit& tu = m_handle.clangTranslationunit();
   libclang::SourceLocation loc = tu.getLocation(*m_file, tokinfo.line, tokinfo.column);
@@ -50,24 +50,24 @@ SymbolObject* TranslationUnitSymbolInfoProvider::getSymbol(const TokenInfo& toki
 
   try 
   {
-    return new TranslationUnitSymbolObject(c);
+    return new ClangSymbolObject(c);
   }
   catch (...) {
     return nullptr;
   }
 }
 
-SymbolReferencesInDocument* TranslationUnitSymbolInfoProvider::getReferencesInDocument(SymbolObject* symbol, const QString& filePath)
+SymbolReferencesInDocument* ClangSemaInfoProvider::getReferencesInDocument(SymbolObject* symbol, const QString& filePath)
 {
-  auto* tusymbol = qobject_cast<TranslationUnitSymbolObject*>(symbol);
+  auto* tusymbol = qobject_cast<ClangSymbolObject*>(symbol);
 
   if (!tusymbol)
     return nullptr;
 
-  return new TranslationUnitSymbolReferencesInDocument(*tusymbol, filePath, *m_file);
+  return new ClangSymbolReferencesInDocument(*tusymbol, filePath, *m_file);
 }
 
-::IncludesInFile* TranslationUnitSymbolInfoProvider::getIncludesInFile(const QString& filePath)
+::IncludesInFile* ClangSemaInfoProvider::getIncludesInFile(const QString& filePath)
 {
-  return new TranslationUnitIncludesInFile(m_handle.clangTranslationunit(), filePath , *m_file);
+  return new ClangIncludesInFile(m_handle.clangTranslationunit(), filePath , *m_file);
 }

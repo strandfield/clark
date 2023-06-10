@@ -4,7 +4,7 @@
 
 #include "tusymbol.h"
  
-TranslationUnitSymbolObject::TranslationUnitSymbolObject(const libclang::Cursor& c) : 
+ClangSymbolObject::ClangSymbolObject(const libclang::Cursor& c) : 
   m_cursor(c)
 {
   setName(c.getSpelling().c_str());
@@ -14,12 +14,12 @@ TranslationUnitSymbolObject::TranslationUnitSymbolObject(const libclang::Cursor&
   setComplete();
 }
 
-TranslationUnitSymbolObject::~TranslationUnitSymbolObject()
+ClangSymbolObject::~ClangSymbolObject()
 {
 
 }
 
-const libclang::Cursor& TranslationUnitSymbolObject::cursor() const
+const libclang::Cursor& ClangSymbolObject::cursor() const
 {
   return m_cursor;
 }

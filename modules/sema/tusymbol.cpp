@@ -10,6 +10,8 @@ TranslationUnitSymbolObject::TranslationUnitSymbolObject(const libclang::Cursor&
   setName(c.getSpelling().c_str());
   setUsr(c.getUSR().c_str());
   setFullName(c.getDisplayName().c_str());
+
+  setComplete();
 }
 
 TranslationUnitSymbolObject::~TranslationUnitSymbolObject()

@@ -5,7 +5,8 @@
 #ifndef CLARK_SYMBOLINFOOBJECT_H
 #define CLARK_SYMBOLINFOOBJECT_H
 
-#include <QObject>
+#include "semaobject.h"
+
 #include <QPointer>
 
 #include <optional>
@@ -13,7 +14,10 @@
 
 class QTextDocument;
 
-class SymbolObject : public QObject
+/**
+ * \brief represents an entity/symbol in a C++ program
+ */
+class SymbolObject : public SemaObject
 {
   Q_OBJECT
 public:
@@ -41,28 +45,27 @@ private:
   int m_id = -1;
 };
 
-class SymbolInfoObjectBase : public QObject
+/**
+ * \brief base class for all sema objects providing information about a C++ symbol
+ * 
+ * Computing information about a symbol may take time and be done asynchronously;
+ * make sure to check isCompleted() before accessing the data.
+ */
+class SymbolInfoObjectBase : public SemaObject
 {
   Q_OBJECT
- 
-  Q_PROPERTY(bool isComplete READ isComplete WRITE setComplete NOTIFY completeChanged)
 public:
   explicit SymbolInfoObjectBase(SymbolObject& sym, QObject* parent = nullptr);
 
   SymbolObject* symbol() const;
 
-  bool isComplete() const;
-  void setComplete(bool c = true);
-
-Q_SIGNALS:
-  void completeChanged();
-  void completed();
-
 private:
   QPointer<SymbolObject> m_symbol;
-  bool m_complete = false;
 };
 
+/**
+ * \brief lists the references of a symbol in a file
+ */
 class SymbolReferencesInDocument : public SymbolInfoObjectBase
 {
   Q_OBJECT

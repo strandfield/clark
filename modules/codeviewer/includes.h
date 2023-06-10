@@ -5,21 +5,19 @@
 #ifndef CLARK_INCLUDES_H
 #define CLARK_INCLUDES_H
 
-#include <QObject>
+#include "semaobject.h"
 
 #include <vector>
 
-// $todo: refactor with symbolinfoobjectbase
-class IncludesInFile : public QObject
+/**
+ * \brief lists the files included in a given file
+ */
+class IncludesInFile : public SemaObject
 {
   Q_OBJECT
-  Q_PROPERTY(bool isComplete READ isComplete WRITE setComplete NOTIFY completeChanged)
 public:
   explicit IncludesInFile(const QString& filePath, QObject* parent = nullptr);
   ~IncludesInFile();
-
-  bool isComplete() const;
-  void setComplete(bool c = true);
 
   const QString& filePath() const;
 
@@ -37,8 +35,6 @@ public:
   QString getInclude(int line) const;
 
 Q_SIGNALS:
-  void completeChanged();
-  void completed();
   void changed();
 
 private:

@@ -12,7 +12,7 @@ class CppSyntaxHighlighter;
 class IncludesInFile;
 class SymbolObject;
 class SymbolReferencesInDocument;
-class SymbolInfoProvider;
+class SemaInfoProvider;
 
 class CodeViewer : public QPlainTextEdit
 {
@@ -28,8 +28,8 @@ public:
 
   static QFont courierFont();
 
-  SymbolInfoProvider* symbolInfoProvider() const;
-  void setSymbolInfoProvider(SymbolInfoProvider* provider);
+  SemaInfoProvider* semaInfoProvider() const;
+  void setSemaInfoProvider(SemaInfoProvider* provider);
 
   SymbolObject* symbolUnderCursor() const;
 
@@ -76,7 +76,7 @@ private:
 
 private:
   CppSyntaxHighlighter* m_syntax_highlighter = nullptr;
-  SymbolInfoProvider* m_info_provider = nullptr;
+  SemaInfoProvider* m_info_provider = nullptr;
   TokenUnderCursor m_token_under_cursor;
   IncludesInFile* m_includes = nullptr;
 };

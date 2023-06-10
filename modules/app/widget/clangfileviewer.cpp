@@ -36,5 +36,5 @@ const libclang::File& ClangFileViewer::file() const
 void ClangFileViewer::setup(CodeViewer* viewer, const TranslationUnitHandle& thandle, const libclang::File& file)
 {
   viewer->setSyntaxHighlighter(new ClangSyntaxHighlighter(thandle, file, viewer->document()));
-  viewer->setSymbolInfoProvider(new TranslationUnitSymbolInfoProvider(thandle, *viewer->document()));
+  viewer->setSemaInfoProvider(new TranslationUnitSymbolInfoProvider(thandle, *viewer->document()));
 }

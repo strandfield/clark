@@ -5,7 +5,7 @@
 #ifndef CLARK_TUSYMBOLINFOPROVIDER_H
 #define CLARK_TUSYMBOLINFOPROVIDER_H
 
-#include <codeviewer/symbolinfoprovider.h>
+#include <codeviewer/semainfoprovider.h>
 
 #include <program/translationunit.h>
 
@@ -13,7 +13,7 @@
 
 class QTextDocument;
 
-class TranslationUnitSymbolInfoProvider : public SymbolInfoProvider
+class TranslationUnitSymbolInfoProvider : public SemaInfoProvider
 {
   Q_OBJECT
 public:

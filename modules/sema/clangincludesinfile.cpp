@@ -2,7 +2,7 @@
 // This file is part of the 'clark' project.
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
-#include "tuincludesinfile.h"
+#include "clangincludesinfile.h"
 
 #include <libclang-utils/findincludesinfile.h>
 

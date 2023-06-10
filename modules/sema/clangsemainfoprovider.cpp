@@ -2,7 +2,7 @@
 // This file is part of the 'clark' project.
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
-#include "tusymbolinfoprovider.h"
+#include "clangsemainfoprovider.h"
 
 #include "clangsymbol.h"
 #include "clangincludesinfile.h"

@@ -5,6 +5,34 @@
 #ifndef CLARK_CLANGSEMAINFOPROVIDER_H
 #define CLARK_CLANGSEMAINFOPROVIDER_H
 
-#include "tusymbolinfoprovider.h"
+#include <codeviewer/semainfoprovider.h>
+
+#include <program/translationunit.h>
+
+#include <libclang-utils/clang-file.h>
+
+class QTextDocument;
+
+/**
+ * \brief provides semantic information within a translation unit using libclang
+ */
+class ClangSemaInfoProvider : public SemaInfoProvider
+{
+  Q_OBJECT
+public:
+  // $todo: should we pass the document, or rather the document path directly
+  ClangSemaInfoProvider(TranslationUnitHandle handle, const QTextDocument& document);
+  ~ClangSemaInfoProvider();
+
+  Features features() const override;
+
+  SymbolObject* getSymbol(const TokenInfo& tokinfo) override;
+  SymbolReferencesInDocument* getReferencesInDocument(SymbolObject* symbol, const QString& filePath) override;
+  ::IncludesInFile* getIncludesInFile(const QString& filePath) override;
+
+private:
+  TranslationUnitHandle m_handle;
+  std::unique_ptr<libclang::File> m_file;
+};
 
 #endif // CLARK_CLANGSEMAINFOPROVIDER_H

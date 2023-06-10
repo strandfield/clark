@@ -5,6 +5,21 @@
 #ifndef CLARK_CLANGSYMBOL_H
 #define CLARK_CLANGSYMBOL_H
 
-#include "tusymbol.h"
+#include <codeviewer/symbolinfoobject.h>
+
+#include <libclang-utils/clang-cursor.h>
+
+class ClangSymbolObject : public SymbolObject
+{
+  Q_OBJECT
+public:
+  explicit ClangSymbolObject(const libclang::Cursor& c);
+  ~ClangSymbolObject();
+
+  const libclang::Cursor& cursor() const;
+
+private:
+  libclang::Cursor m_cursor;
+};
 
 #endif // CLARK_CLANGSYMBOL_H

@@ -2,7 +2,7 @@
 // This file is part of the 'clark' project.
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
-#include "tusymbol.h"
+#include "clangsymbol.h"
  
 ClangSymbolObject::ClangSymbolObject(const libclang::Cursor& c) : 
   m_cursor(c)
